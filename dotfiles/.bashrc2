@@ -1,0 +1,30 @@
+export DOTHOME=$(dirname ${BASH_SOURCE[0]})
+source $DOTHOME/.shell_alias
+source $DOTHOME/.git_alias
+
+if [ -t 0 ]; then
+if [[ "$-" =~ "i" ]]; then
+	bind '"\e[H"':"beginning-of-line"
+	bind '"\e[F"':"end-of-line"
+	bind '"\e\e[D"':"backward-word"
+	bind '"\e\e[C"':"forward-word"
+	bind '"\e[3;5~"':"kill-word"
+	# "backward-kill-word" is 0x17 (ctrl-w)
+fi
+fi
+
+export HOST=$HOST
+
+
+USER_COLOR="${COLOR_NONE}"
+declare -A USER_COLOR
+USER_COLOR[$USER]=${COLOR_GREEN}
+USER_COLOR[root]=${COLOR_RED}
+USER_COLOR[ec2-user]=${COLOR_ORANGE}
+
+function updatePS1 {
+    EXITCODE=$?
+    [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
+    PS1="${USER_COLOR[$USER]}\u${COLOR_NONE}@\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
+}
+export PROMPT_COMMAND="updatePS1"

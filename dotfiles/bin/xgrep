@@ -1,0 +1,2 @@
+#!/bin/sh
+xargs -x -d'\n' grep -E -I -H -n --color "$@"

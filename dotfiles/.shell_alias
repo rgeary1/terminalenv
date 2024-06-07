@@ -1,0 +1,25 @@
+alias g='grep -i -E'
+alias ll='ls -l --color'
+alias chx='chmod +x'
+COLOR_RED="\e[1;31m"
+COLOR_BLUE="\e[1;34m"
+COLOR_GREEN="\e[0;32m"
+COLOR_WHITE="\e[1;37m"
+COLOR_ORANGE="\e[0;33m"
+COLOR_NONE="\e[m"
+
+export HOST=$HOST
+
+function path {
+    echo $PATH | tr ':' '\n'
+}
+function addpath {
+    if [[ ! "$PATH:" =~ "$1:" ]]; then
+        if [[ $2 == 'prefix' ]]; then
+            export PATH=$1:$PATH
+        else
+            export PATH=$PATH:$1
+        fi
+    fi
+}
+addpath $HOME/bin
