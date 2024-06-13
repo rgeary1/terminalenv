@@ -28,3 +28,9 @@ function updatePS1 {
     PS1="${USER_COLOR[$USER]}\u${COLOR_NONE}@\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
 }
 export PROMPT_COMMAND="updatePS1"
+
+if [[ -e $HOME/.pyenv ]]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+fi
