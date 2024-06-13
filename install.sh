@@ -14,6 +14,7 @@ echo "Installing to $DESTDIR"
 
 # Set up directories
 mkdir -p $DESTDIR/bin
+mkdir -p $DESTDIR/bin/sbin
 
 # Copy the files
 files=(
@@ -25,6 +26,7 @@ files=(
     ".git_alias"
     "bin/tmux-a"
     "bin/xgrep"
+    "bin/sbin/aws_sleep_on_idle"
 )
 for f in ${files[@]}; do
     echo curl -s $SRC_URL/dotfiles/$f -o $DESTDIR/$f
@@ -34,8 +36,7 @@ done
 # Modify files
 [ ! -e $DESTDIR/.bashrc ] && touch $DESTDIR/.bashrc
 grep -q 'source ~/.bashrc2' $DESTDIR/.bashrc || echo 'source ~/.bashrc2' >> $DESTDIR/.bashrc
-chmod +x $DESTDIR/bin/tmux-a
-chmod +x $DESTDIR/bin/xgrep
+chmod -R +x $DESTDIR/bin/
 
 echo "Done.  Run :"
 if [[ $SHELL =~ zsh ]]; then

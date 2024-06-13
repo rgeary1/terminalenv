@@ -1,0 +1,28 @@
+#!/bin/bash
+
+sleep_file=/tmp/sleep.last
+
+(echo "$(date) $(who)" )>> /tmp/sleep.log
+
+function sleep_now {
+  echo "$(date) sleep now" >> /tmp/sleep.log
+  iid=$(ec2-metadata -i | cut -d' ' -f2)
+  aws ec2 stop-instances --instance-ids $iid --hibernate
+}
+
+num_users=$(who | wc -l)
+if [[ -w $sleep_file ]]; then
+  if [[ $num_users -gt 0 ]]; then
+    rm $sleep_file
+  else
+    now=$(date +%s)
+    sleep_start=$(cat $sleep_file)
+    if [[ $(($sleep_start+600)) -lt $now ]]; then
+      echo "$(date) idle for 10 mins" >> /tmp/sleep.log
+      sleep_now
+    fi
+  fi
+else
+  touch $sleep_file
+fi
+    
