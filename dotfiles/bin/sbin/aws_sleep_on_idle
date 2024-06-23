@@ -1,19 +1,21 @@
 #!/bin/bash
 
 sleep_file=/tmp/sleep.last
+log_file=/tmp/sleep.log
+timeout=600
 min_users=0
 
 set -x
 
 function sleep_now {
-  echo "$(date) sleep now" >> /tmp/sleep.log
+  echo "$(date) sleep now" >> $log_file
   iid=$(ec2-metadata -i | cut -d' ' -f2)
   aws ec2 stop-instances --instance-ids $iid --hibernate && rm $sleep_file
 }
 
-num_users=$(who -u | grep -v root | wc -l)
+num_users=$(who -u | grep -F -v '(mosh ' | wc -l)
 echo "num users $num_users"
-(date; echo "num users $num_users"; who -u | grep -v root; )>> /tmp/sleep.log
+(date; echo "num users $num_users"; who -u | grep -F -v '(mosh '; )>> $log_file
 
 if [[ -e $sleep_file ]]; then
   if [[ $num_users -gt $min_users ]]; then
@@ -22,8 +24,8 @@ if [[ -e $sleep_file ]]; then
     now=$(date +%s)
     sleep_start=$(cat $sleep_file)
     sleep_diff=$(($now-$sleep_start))
-    if [[ $sleep_diff -gt 600 ]]; then
-      echo "$(date) idle for 10 mins" >> /tmp/sleep.log
+    if [[ $sleep_diff -gt $timeout ]]; then
+      echo "$(date) idle for $(($timeout/60)) mins" >> $log_file
       sleep_now
     fi
   fi
