@@ -8,8 +8,7 @@ set -x
 function sleep_now {
   echo "$(date) sleep now" >> /tmp/sleep.log
   iid=$(ec2-metadata -i | cut -d' ' -f2)
-  aws ec2 stop-instances --instance-ids $iid --hibernate
-  rm $sleep_file
+  aws ec2 stop-instances --instance-ids $iid --hibernate && rm $sleep_file
 }
 
 num_users=$(who -u | grep -v root | wc -l)
@@ -22,7 +21,8 @@ if [[ -e $sleep_file ]]; then
   else
     now=$(date +%s)
     sleep_start=$(cat $sleep_file)
-    if [[ $(($sleep_start+600)) -lt $now ]]; then
+    sleep_diff=$(($now-$sleep_start))
+    if [[ $sleep_diff -gt 600 ]]; then
       echo "$(date) idle for 10 mins" >> /tmp/sleep.log
       sleep_now
     fi
@@ -30,8 +30,6 @@ if [[ -e $sleep_file ]]; then
 else
   if [[ $num_users -le $min_users ]]; then
     date +%s > $sleep_file
-  else
-    rm $sleep_file
   fi
 fi
     
