@@ -46,6 +46,7 @@ if which mosh >/dev/null 2>&1; then
   echo "mosh installed"
 else
   echo "Installing mosh..."
+  sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel
   ver=mosh-1.4.0
   f=mosh-1.4.0.tar.gz
   curl -s -L $SRC_URL/pkgs/$f -o $DESTDIR/tmp/$f
