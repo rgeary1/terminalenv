@@ -1,4 +1,4 @@
-DOTHOME=${0:A:h}
+DOTHOME=$(dirname ${(%):-%N})
 source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
 
@@ -41,5 +41,9 @@ if [[ -e $HOME/.pyenv ]]; then
   export PYENV_ROOT="$HOME/.pyenv"
   [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
   eval "$(pyenv init -)"
+fi
+
+if [[ -e $HOME/.cargo/env ]]; then
+  source $HOME/.cargo/env
 fi
 
