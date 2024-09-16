@@ -6,6 +6,8 @@ bindkey "^[[H" "beginning-of-line"
 bindkey "^[[F" "end-of-line"
 bindkey "^[^[[D" "backward-word"
 bindkey "^[^[[C" "forward-word"
+bindkey "^[[1;5D" "backward-word"
+bindkey "^[[1;5C" "forward-word"
 bindkey "^[[3;5~" "kill-word"
 # "backward-kill-word" is 0x17 (ctrl-w)
 

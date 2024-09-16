@@ -8,8 +8,11 @@ if [[ "$-" =~ "i" ]]; then
 	bind '"\e[F"':"end-of-line"
 	bind '"\e\e[D"':"backward-word"
 	bind '"\e\e[C"':"forward-word"
+	bind '"\e[1;5D"':"backward-word"
+	bind '"\e[1;5C"':"forward-word"
 	bind '"\e[3;5~"':"kill-word"
-	# "backward-kill-word" is 0x17 (ctrl-w)
+	# "backward-kill-word" is 0x17 (ctrl-w), Ubuntu uses ~/.inputrc
+  stty -ixon >/dev/null 2>&1
 fi
 fi
 
