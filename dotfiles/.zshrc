@@ -22,6 +22,7 @@ fi
 ZCOLOR_RED='%{%B%F{red}%}'
 ZCOLOR_BLUE='%{%B%F{blue}%}'
 ZCOLOR_GREEN='%{%b%F{green}%}'
+ZCOLOR_BGREEN='%{%B%F{green}%}'
 ZCOLOR_WHITE='%{%B%F{white}%}'
 ZCOLOR_ORANGE='%{%b%F{orange}%}'
 ZCOLOR_NONE='%{%b%f%}' 
