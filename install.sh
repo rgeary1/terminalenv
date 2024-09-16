@@ -28,6 +28,7 @@ files=(
     ".shell_alias"
     ".git_alias"
     ".inputrc"
+    "bin/gd"
     "bin/tmux-a"
     "bin/xgrep"
     "bin/sbin/aws_sleep_on_idle"
