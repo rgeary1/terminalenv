@@ -1,11 +1,11 @@
 #!/bin/sh
 
 if [[ $1 == "-c" ]]; then
-  exec git diff --cached
+  exec git diff --cached "$@"
 elif [[ $1 == "-1" ]]; then
-  exec git log -p -1
+  exec git log -p -1 "$@"
 elif [[ $1 == "-2" ]]; then
-  exec git log -p -2
+  exec git log -p -2 "$@"
 else
-  exec git diff
+  exec git diff "$@"
 fi

@@ -1,6 +1,8 @@
 alias g='grep -i -E'
 alias ll='ls -l --color'
 alias chx='chmod +x'
+alias wcl='wc -l'
+
 COLOR_RED="\e[1;31m"
 COLOR_BLUE="\e[1;34m"
 COLOR_GREEN="\e[0;32m"
