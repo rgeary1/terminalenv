@@ -1,0 +1,12 @@
+.bashrc2
+.zshrc
+.tmux.conf
+.vimrc
+.shell_alias
+.git_alias
+.inputrc
+bin/gd
+bin/tmux-a
+bin/xgrep
+bin/aws_sleep_on_idle
+
