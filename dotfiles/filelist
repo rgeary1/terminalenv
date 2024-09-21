@@ -1,5 +1,6 @@
 .bashrc2
 .zshrc
+.gdbinit
 .tmux.conf
 .vimrc
 .shell_alias
