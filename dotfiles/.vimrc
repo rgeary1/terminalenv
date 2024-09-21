@@ -14,4 +14,4 @@ noremap <C-BS> db
 set expandtab
 set tabstop=2
 set number 
-noremap n :set number!<cr>
+noremap 1 :set number!<cr>
