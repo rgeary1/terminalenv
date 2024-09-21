@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+  echo "git-uncommit"
+  echo "  Uncommit a file from a previous commit, move to HEAD"
+  echo "  Syntax: git-uncommit <filename>"
+  exit 1
+fi
+
+# Verify that no files are staged
+if ! git diff --cached --name-only --quiet --ignore-submodules; then
+  echo >&2 "Cannot use 'git uncommit' when you have staged files"
+  exit 1
+fi
+
+set -euxo pipefail
+
+file=$1
+
+hash=$(git log -1 --format=%H -- $file)
+
+if [[ $hash == "" ]]; then
+  echo "No commits in git log for file $file"
+  exit 1
+fi
+
+
+git reset HEAD~1 -- "$@" || exit 1
+git commit --amend --no-edit || exit 1
+
