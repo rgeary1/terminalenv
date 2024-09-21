@@ -3,6 +3,10 @@ alias ll='ls -l --color'
 alias chx='chmod +x'
 alias wcl='wc -l'
 
+if [[ ${OSTYPE:0:6} == "darwin" ]]; then
+  alias xargs='gxargs'
+fi
+
 COLOR_RED="\e[1;31m"
 COLOR_BLUE="\e[1;34m"
 COLOR_GREEN="\e[0;32m"
