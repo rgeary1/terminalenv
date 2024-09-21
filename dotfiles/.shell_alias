@@ -1,5 +1,6 @@
 alias g='grep -i -E'
 alias ll='ls -l --color'
+alias lla='ls -l --color -a'
 alias chx='chmod +x'
 alias wcl='wc -l'
 
