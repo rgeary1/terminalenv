@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eu
 
 cd -- $(dirname $(readlink -f -- "$0"))
 
