@@ -1,7 +1,11 @@
+alias chx='chmod +x'
 alias g='grep -i -E'
+alias hex='hexdump -C'
 alias ll='ls -l --color'
 alias lla='ls -l --color -a'
-alias chx='chmod +x'
+alias man23='man -s2,3'
+alias sortu='sort -u'
+alias sortn='sort -n'
 alias wcl='wc -l'
 
 if [[ ${OSTYPE:0:6} == "darwin" ]]; then
@@ -31,3 +35,8 @@ function addpath {
     fi
 }
 addpath $HOME/bin
+
+function sum1 {
+  awk '{ s += $1 } END { print s }'
+}
+
