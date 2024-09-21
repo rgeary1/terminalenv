@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ "${OSTYPE:0:6} == "darwin" ]]; then
+if [[ "${OSTYPE:0:6}" == "darwin" ]]; then
   exec gxargs -x -d'\n' grep -E -I -H -n --color "$@"
 else
   exec xargs -x -d'\n' grep -E -I -H -n --color "$@"
