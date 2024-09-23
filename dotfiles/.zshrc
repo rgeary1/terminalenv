@@ -9,7 +9,7 @@ bindkey "^[^[[C" "forward-word"
 bindkey "^[[1;5D" "backward-word"
 bindkey "^[[1;5C" "forward-word"
 bindkey "^[[3;5~" "kill-word"
-# "backward-kill-word" is 0x17 (ctrl-w)
+bindkey "^H" "backward-kill-word"
 
 export WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
