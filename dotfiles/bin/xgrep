@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ "${OSTYPE:0:6}" == "darwin" ]]; then
   exec gxargs -x -d'\n' grep -E -I -H -n --color "$@"

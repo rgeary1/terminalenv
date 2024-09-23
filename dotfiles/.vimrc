@@ -10,7 +10,9 @@ inoremap <esc>[3;5~ <C-o>de
 noremap <esc>[3;5~ de
 " Ctrl Backspace
 inoremap <C-BS> <C-W>
+inoremap <C-H> <C-W>
 noremap <C-BS> db
+noremap <C-H> db
 set expandtab
 set tabstop=2
 set number 

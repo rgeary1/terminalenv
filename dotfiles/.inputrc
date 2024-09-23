@@ -1,1 +1,1 @@
-"\C-H":"\C-W"
+"\C-H":backward-kill-word
