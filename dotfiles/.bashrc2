@@ -3,9 +3,11 @@ source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
 
 # GPG Yubikey
-export GPG_TTY="$(tty)"
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-gpg-connect-agent updatestartuptty /bye > /dev/null
+if [[ -d $HOME/.gnupg ]]; then
+  export GPG_TTY="$(tty)"
+  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+  gpg-connect-agent updatestartuptty /bye > /dev/null
+fi
 
 # append to the history file, don't overwrite it
 shopt -s histappend
@@ -45,8 +47,10 @@ function appendPath() { export PATH=$PATH:$1; makePathUnique; }
 function makePathUnique() { PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':'); }
 
 # Rust
-appendPath $HOME/.cargo/bin
-source $HOME/.cargo/env 
+if [[ -d $HOME/.cargo ]]; then
+  appendPath $HOME/.cargo/bin
+  source $HOME/.cargo/env 
+fi
 
 if [[ $USER == root ]]; then
   USER_COLOR=$COLOR_RED
