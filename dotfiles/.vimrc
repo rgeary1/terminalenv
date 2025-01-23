@@ -17,3 +17,6 @@ set expandtab
 set tabstop=2
 set number 
 noremap 1 :set number!<cr>
+" Disable ctrl-z from vim
+noremap <C-z> <nop>
+

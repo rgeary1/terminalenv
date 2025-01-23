@@ -4,20 +4,30 @@ alias hex='hexdump -C'
 alias ll='ls -l --color'
 alias lla='ls -l --color -a'
 alias man23='man -s2,3'
+alias mdv=~/venv/bin/mdv
 alias sortu='sort -u'
 alias sortn='sort -n'
+alias tailf='tail -F'
 alias wcl='wc -l'
 
 if [[ ${OSTYPE:0:6} == "darwin" ]]; then
   alias xargs='gxargs'
 fi
 
+export MDV_THEME=729.8953
+
 COLOR_RED="\e[1;31m"
-COLOR_BLUE="\e[1;34m"
 COLOR_GREEN="\e[0;32m"
-COLOR_BGREEN="\e[1;32m"
-COLOR_WHITE="\e[1;37m"
 COLOR_ORANGE="\e[0;33m"
+COLOR_BLUE="\e[0;34m"
+COLOR_PURPLE="\e[0;35m"
+COLOR_CYAN="\e[0;36m"
+COLOR_BGREEN="\e[1;32m"
+COLOR_BORANGE="\e[1;33m"
+COLOR_BBLUE="\e[1;34m"
+COLOR_BPURPLE="\e[1;35m"
+COLOR_BCYAN="\e[1;36m"
+COLOR_BWHITE="\e[1;37m"
 COLOR_NONE="\e[m"
 
 export HOST=$HOST

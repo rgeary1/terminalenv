@@ -7,9 +7,14 @@
 .git_alias
 .inputrc
 bin/colorpath
+bin/field
+bin/findf
 bin/gd
 bin/git-uncommit
+bin/jq
+bin/synctime
 bin/tmux-a
+bin/xcat
 bin/xgrep
 bin/aws_sleep_on_idle
 

@@ -2,8 +2,26 @@ export DOTHOME=$(dirname ${BASH_SOURCE[0]})
 source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
 
-export HISTSIZE=1000
-export HISTCONTROL=ignoredups
+# GPG Yubikey
+export GPG_TTY="$(tty)"
+export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+gpg-connect-agent updatestartuptty /bye > /dev/null
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+HISTSIZE=1000
+HISTFILESIZE=2000
+HISTCONTROL=ignoreboth
+export HISTFILE=~/.bash_history.${TMUX_PANE}
+
+export LESS=-RXIF
+export SYSTEMD_LESS="FRXMK" 
+
+# check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# Enable lesspipe
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 if [ -t 0 ]; then
 if [[ "$-" =~ "i" ]]; then
@@ -19,29 +37,41 @@ if [[ "$-" =~ "i" ]]; then
 fi
 fi
 
-export HOST=$HOST
+export HOST=${HOST-$(hostname)}
 export EDITOR=vi
 
 function prependPath() { export PATH=$1:$PATH; makePathUnique; }
 function appendPath() { export PATH=$PATH:$1; makePathUnique; }
 function makePathUnique() { PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':'); }
 
-if [[ ${BASH_VERSION:0:1} -ge 5 ]]; then
-  unset USER_COLOR
-  declare -A USER_COLOR
-  USER_COLOR[$USER]=${COLOR_BGREEN}
-  USER_COLOR[root]=${COLOR_RED}
-  USER_COLOR[ec2-user]=${COLOR_ORANGE}
+# Rust
+appendPath $HOME/.cargo/bin
+source $HOME/.cargo/env 
+
+if [[ $USER == root ]]; then
+  USER_COLOR=$COLOR_RED
+elif [[ $USER == "ec2-user" ]]; then
+  USER_COLOR=${COLOR_ORANGE}
 else
-  USER_COLOR="$COLOR_NONE"
+  USER_COLOR=${COLOR_BGREEN}
 fi
 
+export _ts_bashrc=$(stat -c%Y ~/.bashrc2)
+export _ts_bashrc2=$(stat -c%Y ~/.bashrc2)
+function reloadBashRC {
+    if [[ $(stat -c%Y ~/.bashrc2) != $_ts_bashrc2 || $(stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
+        source ~/.bashrc
+        echo "Reloaded" >&2
+        export _ts_bashrc=$(stat -c%Y ~/.bashrc)
+        export _ts_bashrc2=$(stat -c%Y ~/.bashrc2)
+    fi
+}
 function updatePS1 {
     EXITCODE=$?
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
-    PS1="${USER_COLOR[$USER]}\u${COLOR_NONE}@${COLOR_ORANGE}\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
+    PS1="${USER_COLOR}\u${COLOR_NONE}@${COLOR_ORANGE}\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
 }
-export PROMPT_COMMAND="updatePS1"
+export PROMPT_COMMAND="updatePS1; reloadBashRC; history -a"
 
 if [[ $UID == 0 ]]; then
   # Root user, simpler setup
@@ -55,3 +85,12 @@ else
     eval "$(pyenv init -)"
   fi
 fi
+
+# disable middle button
+# xinput set-button-map 11 1 1 3 4 5 6 7
+
+alias b='build-run build'
+alias r='build-run run'
+alias n='ninja-root-build'
+alias t='build-run test'
+alias c='build-run check'
