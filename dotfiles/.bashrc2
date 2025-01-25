@@ -39,8 +39,10 @@ if [[ "$-" =~ "i" ]]; then
 fi
 fi
 
-export HOST=${HOST-$(hostname)}
 export EDITOR=vi
+export HOST=${HOST-$(hostname)}
+export HOSTCOLOR="$COLOR_ORANGE"
+[ -e $HOME/.hostcolor ] && export HOSTCOLOR="$(head -1 $HOME/.hostcolor)"
 
 function prependPath() { export PATH=$1:$PATH; makePathUnique; }
 function appendPath() { export PATH=$PATH:$1; makePathUnique; }
@@ -73,7 +75,7 @@ function reloadBashRC {
 function updatePS1 {
     EXITCODE=$?
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
-    PS1="${USER_COLOR}\u${COLOR_NONE}@${COLOR_ORANGE}\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
+    PS1="${USER_COLOR}\u${COLOR_NONE}@${HOSTCOLOR}\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
 }
 export PROMPT_COMMAND="updatePS1; reloadBashRC; history -a"
 
