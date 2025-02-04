@@ -3,7 +3,7 @@ source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
 
 # GPG Yubikey
-if [[ -d $HOME/.gnupg ]]; then
+if [[ -d $HOME/.gnupg && $UID != 0 ]]; then
   export GPG_TTY="$(tty)"
   export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
   gpg-connect-agent updatestartuptty /bye > /dev/null
@@ -91,7 +91,6 @@ else
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
   fi
-fi
 
 # disable middle button
 # xinput set-button-map 11 1 1 3 4 5 6 7
@@ -101,3 +100,6 @@ alias r='build-run run'
 alias n='ninja-root-build'
 alias t='build-run test'
 alias c='build-run check'
+
+fi # UID == 0
+
