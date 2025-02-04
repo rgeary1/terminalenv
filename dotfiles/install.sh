@@ -3,6 +3,9 @@
 set -euo pipefail
 cd -- $(dirname $(readlink -f -- "$0"))
 dryrun=0
+mkdir -p $HOME/tmp
+  
+export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master}
 
 if [[ "$0" == "-n" ]]; then
   echo "Dryrun mode"
@@ -39,7 +42,7 @@ if which mosh >/dev/null 2>&1; then
 else
   echo "Installing mosh..."
   which yum >/dev/null 2>&1 && \
-    sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel
+    sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics
   which apt-get >/dev/null 2>&1 && \
     sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev
   ver=mosh-1.4.0
