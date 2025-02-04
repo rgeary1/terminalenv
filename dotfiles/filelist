@@ -1,11 +1,12 @@
 .bashrc2
-.zshrc
+.lessfilter
 .gdbinit
-.tmux.conf
-.vimrc
-.shell_alias
 .git_alias
 .inputrc
+.shell_alias
+.tmux.conf
+.vimrc
+.zshrc
 bin/colorpath
 bin/field
 bin/findf
