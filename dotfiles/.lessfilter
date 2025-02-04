@@ -1,0 +1,20 @@
+ #!/bin/sh
+
+ case "$1" in
+     *.md)
+         BIN=$HOME/.local/bin/mdv
+         ;;
+     *)
+         # We don't handle this format.
+         exit 1
+ esac
+
+if [[ -e $BIN ]]; then
+  $BIN "$@"
+else
+  exit 1
+fi
+
+ # No further processing by lesspipe necessary
+ exit 0
+
