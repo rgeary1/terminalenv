@@ -14,7 +14,8 @@ shopt -s histappend
 HISTSIZE=1000
 HISTFILESIZE=2000
 HISTCONTROL=ignoreboth
-export HISTFILE=~/.bash_history.${TMUX_PANE}
+export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
+export HISTFILE=~/.bash_history.${TMUX_UID}
 history -r
 
 export LESS=-RXIF

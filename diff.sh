@@ -28,6 +28,7 @@ for f in $(ls -a dotfiles/.* dotfiles/bin/*); do
 done
 
 if [[ $update == 0 ]]; then
+  echo
   echo "$num_diffs file(s) different.  Run with '-u' to update."
 else
   echo "$num_diffs file(s) updated"
