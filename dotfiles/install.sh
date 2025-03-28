@@ -42,9 +42,9 @@ if which mosh >/dev/null 2>&1; then
 else
   echo "Installing mosh..."
   which yum >/dev/null 2>&1 && \
-    sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics
+    sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics g++ git
   which apt-get >/dev/null 2>&1 && \
-    sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev
+    sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev g++ proto-compiler git curl make build-essentials
   ver=mosh-1.4.0
   f=mosh-1.4.0.tar.gz
   curl -s -L $SRC_URL/pkgs/$f -o $DESTDIR/tmp/$f

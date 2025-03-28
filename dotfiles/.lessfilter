@@ -1,15 +1,15 @@
- #!/bin/sh
+#!/bin/bash
 
- case "$1" in
-     *.md)
-         BIN=$HOME/.local/bin/mdv
-         ;;
-     *)
-         # We don't handle this format.
-         exit 1
- esac
+case "$1" in
+    *.md)
+        BIN=$HOME/.local/bin/mdv
+        ;;
+    *)
+        # We don't handle this format.
+        exit 1
+esac
 
-if [[ -e $BIN ]]; then
+if [[ -e "$BIN" ]]; then
   $BIN "$@"
 else
   exit 1
