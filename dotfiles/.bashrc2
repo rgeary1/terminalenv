@@ -50,6 +50,8 @@ function prependPath() { export PATH=$1:$PATH; makePathUnique; }
 function appendPath() { export PATH=$PATH:$1; makePathUnique; }
 function makePathUnique() { PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':'); }
 
+appendPath ~/.local/bin
+
 # Rust
 if [[ -d $HOME/.cargo ]]; then
   appendPath $HOME/.cargo/bin

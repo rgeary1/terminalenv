@@ -4,7 +4,6 @@ alias hex='hexdump -C'
 alias ll='ls -l --color'
 alias lla='ls -l --color -a'
 alias man23='man -s2,3'
-alias mdv=~/venv/bin/mdv
 alias sortu='sort -u'
 alias sortn='sort -n'
 alias tailf='tail -F'
