@@ -10,10 +10,11 @@ if [[ $1 == "-u" ]]; then
   update=1
 fi
 
+cd dotfiles
 num_diffs=0
-for f in $(ls -a dotfiles/.* dotfiles/bin/*); do
+for f in $(cat filelist); do
   if [[ ! -f $f ]]; then continue; fi
-  dest=$HOME/$(basename $f)
+  dest=$HOME/$f
   if [[ ! -f $dest ]]; then continue; fi
   if ! diff -q $f $dest >/dev/null; then
     if [[ $update == 0 ]]; then

@@ -20,3 +20,4 @@ noremap 1 :set number!<cr>
 " Disable ctrl-z from vim
 noremap <C-z> <nop>
 
+set noincsearch
