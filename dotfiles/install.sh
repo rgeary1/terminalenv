@@ -44,7 +44,7 @@ else
   which yum >/dev/null 2>&1 && \
     sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics g++ git
   which apt-get >/dev/null 2>&1 && \
-    sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev g++ proto-compiler git curl make build-essentials
+    sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev g++ protobuf-compiler git curl make build-essential pkg-config 
   ver=mosh-1.4.0
   f=mosh-1.4.0.tar.gz
   curl -s -L $SRC_URL/pkgs/$f -o $DESTDIR/tmp/$f

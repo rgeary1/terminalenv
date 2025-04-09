@@ -19,7 +19,7 @@ for f in $(cat filelist); do
   if ! diff -q $f $dest >/dev/null; then
     if [[ $update == 0 ]]; then
       echo "diff "$@" $f $dest"
-      diff "$@" $f $dest
+      diff --color "$@" $f $dest
     else
       echo "cp $dest $f"
       cp "$dest" "$f"

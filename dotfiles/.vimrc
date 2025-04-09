@@ -21,3 +21,5 @@ noremap 1 :set number!<cr>
 noremap <C-z> <nop>
 
 set noincsearch
+set shiftwidth=2
+
