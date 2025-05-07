@@ -19,4 +19,5 @@ bin/tmux-a
 bin/xcat
 bin/xgrep
 bin/aws_sleep_on_idle
+bin/awsdev
 bin/backup_snapshot.sh

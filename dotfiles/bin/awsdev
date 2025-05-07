@@ -1,0 +1,50 @@
+#!/bin/bash
+
+PGID=$$
+trap "kill -SIGINT -$PGID; exit" SIGINT
+
+default_dev_instance_id="${default_dev_instance_id-i-05106c58dbf4596dd}"
+iid="${2-$default_dev_instance_id}"
+
+function help {
+  echo "$0 start|stop [instance_id]"
+}
+
+target="$1"
+if [[ $target != "start" && $target != "stop" ]]; then
+  help
+  exit 1
+fi
+run_cmd=1
+
+for i in $(seq 1 100); do
+  status=$(aws ec2 describe-instances --instance-ids $iid | jq -r '.Reservations[].Instances[].State.Name')
+  echo "$iid = $status"
+  if [[ $target == "start" ]]; then
+    if [[ $status == "" ]]; then
+      continue
+    fi
+    if [[ $status == "running" ]]; then
+      break
+    fi
+    if [[ $run_cmd == 1 ]]; then
+      aws ec2 start-instances --instance-ids $iid --output text
+      run_cmd=0
+    fi
+  elif [[ $target == "stop" ]]; then
+    if [[ $status == "stopped" ]]; then
+      break
+    fi
+    if [[ $run_cmd == 1 ]]; then
+      aws ec2 stop-instances --instance-ids $iid --hibernate --output text
+      run_cmd=0
+    fi
+  fi
+  sleep 1
+done
+
+if [[ $target == "start" ]]; then
+  ip=$(aws ec2 describe-instances --instance-ids $default_dev_instance_id | jq -r .Reservations[0].Instances[0].PublicIpAddress)
+  echo "IP address $ip"
+  sed -i "s,HostName .*,HostName $ip," ~/.ssh/config.earth
+fi
