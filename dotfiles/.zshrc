@@ -50,4 +50,6 @@ if [[ -e $HOME/.cargo/env ]]; then
   source $HOME/.cargo/env
 fi
 
-eval "$(lessfile)"
+if [[ -e /usr/bin/lessfile ]]; then
+  eval "$(lessfile)"
+fi
