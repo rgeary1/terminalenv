@@ -114,5 +114,7 @@ alias n='ninja-root-build'
 alias t='build-run test'
 alias c='build-run check'
 
-fi # UID == 0
+export NINJA_STATUS='[%f/%t+%r] '
+
+fi # UID != 0
 
