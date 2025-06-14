@@ -12,3 +12,11 @@ set debuginfod enabled on
 skip -gfi /usr/include/c++/8/bits/*.h
 
 set history save on
+
+# Pretty printer hooks
+add-auto-load-safe-path ~/qbm/cpp-template/etc/gdb/absl_pretty_printers.py
+source ~/qbm/cpp-template/etc/gdb/absl_pretty_printers.py
+
+add-auto-load-safe-path ~/qbm/cpp-template/etc/gdb/libstdcxx_pretty_printers.py
+source ~/qbm/cpp-template/etc/gdb/libstdcxx_pretty_printers.py
+

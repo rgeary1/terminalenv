@@ -9,6 +9,10 @@ if [[ -d $HOME/.gnupg && $UID != 0 ]]; then
   gpg-connect-agent updatestartuptty /bye > /dev/null
 fi
 
+# GDB
+export DEBUGINFOD_MAX_UNUSED_AGE_S=986400
+
+
 # append to the history file, don't overwrite it
 shopt -s histappend
 HISTSIZE=1000

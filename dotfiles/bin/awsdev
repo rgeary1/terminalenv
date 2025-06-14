@@ -3,24 +3,63 @@
 PGID=$$
 trap "kill -SIGINT -$PGID; exit" SIGINT
 
-default_dev_instance_id="${default_dev_instance_id-i-05106c58dbf4596dd}"
-iid="${2-$default_dev_instance_id}"
+set -eu
+
+iid=${iid-}
 
 function help {
   echo "$0 start|stop [instance_id]"
 }
 
-target="$1"
-if [[ $target != "start" && $target != "stop" ]]; then
-  help
-  exit 1
-fi
+cmd="$1"
 run_cmd=1
 
+if [[ $iid == "" ]]; then
+  iid=$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=earth' --query "Reservations[].Instances[].InstanceId" --output text)
+  echo "earth instance-id $iid"
+fi
+
+function detach_home_vol {
+  HOME_VOL=$(aws ec2 describe-volumes --filters Name=tag:Name,Values=earth-home --query "Volumes[].{VolumeId:VolumeId}" --output text)
+  aws ec2 detach-volume --volume-id $HOME_VOL
+}
+function attach_home_vol {
+  HOME_VOL=$(aws ec2 describe-volumes --filters Name=tag:Name,Values=earth-home --query "Volumes[].{VolumeId:VolumeId}" --output text)
+  aws ec2 attach-volume --volume-id $HOME_VOL --instance-id $iid --device /dev/sdc
+}
+
+if [[ $cmd == "config" ]]; then
+  target=$2
+  if [[ $target == "" ]]; then
+    instance_type=$(aws ec2 describe-instances  --instance-ids $iid --query "Reservations[].Instances[].InstanceType" --output text)
+    echo "$instance_type"
+  fi
+elif [[ $cmd == "ami-create" ]]; then
+  echo "Looking for Dev-Env-AMI"
+  ami_id=$(aws ec2 describe-images --filters 'Name=name,Values=Dev-Env-AMI' --query 'Images[0].ImageId' --output text)
+  if [[ $ami_id != "None" ]]; then
+    echo "Deleting $ami_id"
+    aws ec2 deregister-image --image-id $ami_id
+  fi
+  echo "Flushing remote file system"
+  ssh earth sudo sync
+  echo "Finding root volume from $iid"
+  root_vol_id=$(aws ec2 describe-instances --instance-ids $iid --query "Reservations[0].Instances[0].BlockDeviceMappings[?DeviceName=='/dev/xvda'].Ebs.VolumeId" --output text)
+  echo "Creating root snapshot from $iid vol $root_vol_id"
+  snap_id=$(aws ec2 create-snapshot --volume-id $root_vol_id --description "Snapshot of root volume" | jq -r .SnapshotId)
+  echo "Waiting for snapshot to be completed $snap_id"
+  aws ec2 wait snapshot-completed --snapshot-ids $snap_id
+
+  echo "Creating Dev-Env-AMI from $snap_id"
+  new_ami=$(aws ec2 register-image --name 'Dev-Env-AMI' --description "Dev Env AMI $(date -R)" --root-device-name /dev/xvda --block-device-mappings DeviceName=/dev/xvda,Ebs={SnapshotId=$snap_id})
+  echo "Waiting until image is available : $new_ami"
+  aws ec2 wait image-available --image-ids $new_ami
+  
+elif [[ $cmd == "start" || $cmd == "stop" ]]; then
 for i in $(seq 1 100); do
   status=$(aws ec2 describe-instances --instance-ids $iid | jq -r '.Reservations[].Instances[].State.Name')
   echo "$iid = $status"
-  if [[ $target == "start" ]]; then
+  if [[ $cmd == "start" ]]; then
     if [[ $status == "" ]]; then
       continue
     fi
@@ -29,22 +68,30 @@ for i in $(seq 1 100); do
     fi
     if [[ $run_cmd == 1 ]]; then
       aws ec2 start-instances --instance-ids $iid --output text
+      echo "start" > ~/tmp/awsdev.last
       run_cmd=0
     fi
-  elif [[ $target == "stop" ]]; then
+  elif [[ $cmd == "stop" ]]; then
     if [[ $status == "stopped" ]]; then
       break
     fi
     if [[ $run_cmd == 1 ]]; then
+      fusermount -u ~/earth || true
       aws ec2 stop-instances --instance-ids $iid --hibernate --output text
+      echo "stop" > ~/tmp/awsdev.last
       run_cmd=0
     fi
   fi
   sleep 1
 done
+else
+  help
+  exit 1
+fi
 
-if [[ $target == "start" ]]; then
-  ip=$(aws ec2 describe-instances --instance-ids $default_dev_instance_id | jq -r .Reservations[0].Instances[0].PublicIpAddress)
-  echo "IP address $ip"
+if [[ $cmd == "start" ]]; then
+  ip=$(aws ec2 describe-instances --instance-ids $iid | jq -r .Reservations[0].Instances[0].PublicIpAddress)
   sed -i "s,HostName .*,HostName $ip," ~/.ssh/config.earth
+  echo "IP address $ip"
+  echo "Run : ssh earth"
 fi
