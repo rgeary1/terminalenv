@@ -34,7 +34,9 @@ shopt -s checkwinsize
 if [ -t 0 ]; then
 if [[ "$-" =~ "i" ]]; then
 	bind '"\e[H"':"beginning-of-line"
+  bind '"\e[1~"':"beginning-of-line"
 	bind '"\e[F"':"end-of-line"
+  bind '"\e[4~"':"end-of-line"
 	bind '"\e\e[D"':"backward-word"
 	bind '"\e\e[C"':"forward-word"
 	bind '"\e[1;5D"':"backward-word"
