@@ -10,7 +10,7 @@ alias grc='git rebase --continue'
 alias gco='git checkout'
 alias stash='git stash'
 
-if [[ $SHELL == "bash" && -e /usr/share/bash-completion/completions/git ]]; then
+if [[ $SHELL =~ "bash" && -e /usr/share/bash-completion/completions/git ]]; then
   source /usr/share/bash-completion/completions/git
   __git_complete gco _git_checkout
   __git_complete gb _git_branch
