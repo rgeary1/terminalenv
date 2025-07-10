@@ -8,6 +8,7 @@
 .vimrc
 .zshrc
 bin/tmux-a
+bin/tmux-restore-pane
 bin/colorpath
 bin/field
 bin/findf

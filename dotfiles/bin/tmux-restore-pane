@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Tmux Restore Pane"
+touch ~/.bashrc2
+

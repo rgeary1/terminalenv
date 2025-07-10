@@ -19,7 +19,8 @@ HISTSIZE=1000
 HISTFILESIZE=2000
 HISTCONTROL=ignoreboth
 export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
-export HISTFILE=~/.bash_history.${TMUX_UID}
+mkdir -p ~/.bash_history.d
+export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
 history -r
 
 export LESS=-RXIF
