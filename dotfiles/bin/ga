@@ -1,0 +1,8 @@
+#!/bin/bash
+
+command=add
+
+source ~/bin/git-params.sh
+
+echo "git add ${opts[@]} ${params[@]} -- ${files[@]}"
+git add ${opts[@]} ${params[@]} -- ${files[@]}

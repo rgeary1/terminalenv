@@ -1,0 +1,6 @@
+#!/bin/bash
+cd $(find-root build-run)
+git commit -t .git/git_message "$@"
+if [[ $? == 0 ]]; then
+  truncate -s0 .git/git_message
+fi

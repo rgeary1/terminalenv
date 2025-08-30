@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export HACK=1
+
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "git-uncommit"
   echo "  Uncommit a file from a previous commit, move to HEAD"
@@ -23,7 +25,6 @@ if [[ $hash == "" ]]; then
   echo "No commits in git log for file $file"
   exit 1
 fi
-
 
 git reset HEAD~1 -- "$@" || exit 1
 git commit --amend --no-edit || exit 1

@@ -1,0 +1,4 @@
+#!/bin/bash
+cd $(find-root build-run)
+vi .git_message
+

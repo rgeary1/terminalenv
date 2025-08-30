@@ -18,10 +18,7 @@ shopt -s histappend
 HISTSIZE=1000
 HISTFILESIZE=2000
 HISTCONTROL=ignoreboth
-export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
 mkdir -p ~/.bash_history.d
-export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
-history -r
 
 export LESS=-RXIF
 export SYSTEMD_LESS="FRXMK" 
@@ -80,6 +77,18 @@ fi
 
 export _ts_bashrc=$(stat -c%Y ~/.bashrc)
 export _ts_bashrc2=$(stat -c%Y ~/.bashrc2)
+
+function reloadTmuxUID {
+  now=$(date +%s)
+  if [[ $now -gt $_ts_tmux ]]; then
+    #export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
+    export TMUX_UID=$(tty | cut -d/ -f4)
+    export _ts_tmux=$(($now+86400))
+    export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
+    echo "HISTFILE=$HISTFILE"
+    history -r
+  fi
+}
 function reloadBashRC {
     if [[ $(stat -c%Y ~/.bashrc2) != $_ts_bashrc2 || $(stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
         source ~/.bashrc
@@ -93,7 +102,7 @@ function updatePS1 {
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
     PS1="${USER_COLOR}\u${COLOR_NONE}@${HOSTCOLOR}\h ${COLOR_BLUE}\W${EXIT_SUFFIX}\n$ "
 }
-export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC"
+export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
 if [[ $UID == 0 ]]; then
   # Root user, simpler setup
@@ -118,6 +127,8 @@ alias t='build-run test'
 alias c='build-run check'
 
 export NINJA_STATUS='[%f/%t+%r] '
+export CCACHE_DIR=$HOME/.ccache
+mkdir -p $CCACHE_DIR
 
 fi # UID != 0
 

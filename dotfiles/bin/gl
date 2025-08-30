@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ~/bin/git-params.sh
+
+git log --stat ${opts[@]} ${params[@]} -- ${files[@]}

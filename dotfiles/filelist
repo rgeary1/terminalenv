@@ -22,3 +22,7 @@ bin/xgrep
 bin/aws_sleep_on_idle
 bin/awsdev
 bin/backup_snapshot.sh
+bin/ga
+bin/gl
+bin/gc
+bin/gcm

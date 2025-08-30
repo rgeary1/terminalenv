@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Refresh 3s later
+export _ts_tmux=$(($(date +s)+3))
 tmux list-sessions >/dev/null 2>&1
 if [[ $? != 0 ]]; then
   exec tmux
