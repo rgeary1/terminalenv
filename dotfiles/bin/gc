@@ -1,6 +1,13 @@
 #!/bin/bash
-cd $(find-root build-run)
+set -eu
+
+cd $(find-root .git)
+touch .git/git_message
 git commit -t .git/git_message "$@"
-if [[ $? == 0 ]]; then
-  truncate -s0 .git/git_message
+rv=$?
+if [[ $rv == 0 ]]; then
+  if [[ ! "$@" =~ "-m" ]]; then
+    rm -f .git/git_message
+  fi
 fi
+exit $rv

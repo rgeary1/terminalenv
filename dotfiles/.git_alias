@@ -1,10 +1,10 @@
 alias gs='git status --short'
 alias ga='git add'
-alias gc='git commit'
-alias gca='git commit --amend'
+alias gc="$HOME/bin/gc"
+alias gca="$HOME/bin/gc --amend"
+alias gl="$HOME/bin/gl"
 alias gp='git pull'
 alias gb='git branch'
-alias gl='git log --stat'
 alias gr='git rebase'
 alias grc='git rebase --continue'
 alias gco='git checkout'

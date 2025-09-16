@@ -12,7 +12,10 @@ bin/tmux-restore-pane
 bin/colorpath
 bin/field
 bin/findf
+bin/gc
 bin/gd
+bin/git-params.sh
+bin/gl
 bin/git-uncommit
 bin/jq
 bin/synctime
