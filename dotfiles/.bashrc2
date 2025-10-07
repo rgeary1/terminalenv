@@ -73,7 +73,7 @@ if [[ $USER == root ]]; then
 elif [[ $USER == "ec2-user" ]]; then
   USER_COLOR=${COLOR_ORANGE}
 else
-  USER_COLOR=${COLOR_BGREEN}
+  USER_COLOR=${COLOR_GREEN}
 fi
 
 export _ts_bashrc=$(stat -c%Y ~/.bashrc)
@@ -129,6 +129,11 @@ alias c='build-run check'
 
 export NINJA_STATUS='[%f/%t+%r] '
 export CCACHE_DIR=$HOME/.ccache
+ncores=$(cat /proc/cpuinfo | grep '^model name' | wc -l)
+isolcpus=$(cat /proc/cmdline | grep -o 'isolcpus=[^ ]*' | head -1 | cut -d= -f2)
+isolcpus="$((1-1 * (${isolcpus}+0) ))"
+ncores=$(($ncores-$isolcpus))
+export MAKEFLAGS="-j$ncores"
 mkdir -p $CCACHE_DIR
 
 fi # UID != 0

@@ -1,6 +1,7 @@
 alias chx='chmod +x'
 alias g='grep -i -E --color'
 alias hex='hexdump -C'
+alias hexd='hexdump -v -e "\"%08_ad  \" 16/1 \"%02x \" \"   \" 16/1 \"%02x \" \"  |\"" -e " 16/1 \"%_p\" 16/1 \"%_p\"\"|\n\""'
 alias ll='ls -l --color'
 alias lla='ls -l --color -a'
 alias man23='man -s2,3'
