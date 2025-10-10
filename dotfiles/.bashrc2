@@ -20,7 +20,8 @@ HISTFILESIZE=2000
 HISTCONTROL=ignoreboth
 mkdir -p ~/.bash_history.d
 
-export LESS=-RXIF
+# -Bb1234567 will limit memory to 1.2Gb, prevents OOMs
+export LESS="-RXIFBb1234567"
 export SYSTEMD_LESS="FRXMK" 
 
 # check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
