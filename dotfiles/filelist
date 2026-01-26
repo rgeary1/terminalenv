@@ -17,6 +17,7 @@ bin/gd
 bin/git-params.sh
 bin/gl
 bin/git-uncommit
+bin/git-params.sh
 bin/jq
 bin/synctime
 bin/tmux-a

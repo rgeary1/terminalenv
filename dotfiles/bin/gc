@@ -3,7 +3,25 @@ set -eu
 
 cd $(find-root .git)
 touch .git/git_message
-git commit -t .git/git_message "$@"
+args=()
+message=""
+for arg in "$@"; do
+  if [[ $message != "" ]]; then
+    message="$message $arg"
+    continue
+  fi
+  if [[ $arg == "-m" ]]; then
+    message=" "
+  else
+    args+=("$arg")
+  fi
+done
+if [[ "$message" != "" ]]; then
+  args+=("-m")
+  args+=("${message:2}")
+fi
+    
+git commit -t .git/git_message "${args[@]}"
 rv=$?
 if [[ $rv == 0 ]]; then
   if [[ ! "$@" =~ "-m" ]]; then

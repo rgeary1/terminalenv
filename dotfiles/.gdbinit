@@ -28,7 +28,7 @@ skip function Bytes::Bytes(const void*, size_t)
 skip function Bytes::Bytes(const char*, const char*)
 skip file qcore/mem/BytesBuf.h
 #skip file /opt/infra.1/include/c++/15.1.0/bits/std_function.h
-skip file qbuild/Callback.h
+#skip file qbuild/Callback.h
 skip file /home/richard/qbm/cpp-template/3rdparty/install/*
 
 

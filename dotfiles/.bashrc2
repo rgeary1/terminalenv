@@ -112,6 +112,7 @@ if [[ $UID == 0 ]]; then
   alias cp='cp -i'
   alias mv='mv -i'
 else
+  alias virsh='sudo virsh'
   if [[ -e $HOME/.pyenv ]]; then
     export PYENV_ROOT="$HOME/.pyenv"
     command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"

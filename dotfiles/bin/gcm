@@ -1,4 +1,8 @@
 #!/bin/bash
 cd $(find-root build-run)
-vi .git/git_message
+if [[ $# -gt 0 ]]; then
+  echo "$@" >> .git/git_message
+else
+  vi .git/git_message
+fi
 
