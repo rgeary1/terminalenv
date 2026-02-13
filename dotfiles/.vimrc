@@ -1,3 +1,5 @@
+set nocompatible
+
 noremap q :q<cr>
 noremap <C-q> :q<cr>
 noremap <C-s> :w<cr>
