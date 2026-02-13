@@ -46,7 +46,8 @@ if [[ "$-" =~ "i" ]]; then
 fi
 fi
 
-export EDITOR=vi
+export EDITOR=vim
+alias vi=vim
 export HOST=${HOST-$(hostname)}
 export HOSTCOLOR="$COLOR_ORANGE"
 [ -e $HOME/.hostcolor ] && export HOSTCOLOR="$(head -1 $HOME/.hostcolor)"
