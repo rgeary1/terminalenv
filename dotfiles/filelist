@@ -12,6 +12,7 @@ bin/tmux-restore-pane
 bin/colorpath
 bin/field
 bin/findf
+bin/find-root
 bin/gc
 bin/gd
 bin/git-params.sh
