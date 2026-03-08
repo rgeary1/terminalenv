@@ -140,5 +140,7 @@ ncores=$(($ncores-$isolcpus))
 export MAKEFLAGS="-j$ncores"
 mkdir -p $CCACHE_DIR
 
+if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
+
 fi # UID != 0
 
