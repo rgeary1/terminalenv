@@ -23,6 +23,33 @@ export DESTDIR=${DESTDIR-$HOME}
 echo "Installing to $DESTDIR"
 mkdir -p ${DESTDIR}/bin
 
+# Check for locally modified files before overwriting
+CHECKSUM_FILE="${DESTDIR}/.dotfiles/.installed_checksums"
+if [[ -f "$CHECKSUM_FILE" && $dryrun == 0 ]]; then
+  modified_files=()
+  while IFS='  ' read -r saved_sum fpath; do
+    dest="${DESTDIR}/${fpath}"
+    if [[ -f "$dest" ]]; then
+      current_sum=$(md5sum "$dest" | cut -d' ' -f1)
+      if [[ "$current_sum" != "$saved_sum" ]]; then
+        modified_files+=("$fpath")
+      fi
+    fi
+  done < "$CHECKSUM_FILE"
+
+  if [[ ${#modified_files[@]} -gt 0 ]]; then
+    echo "WARNING: The following files have been locally modified:"
+    for mf in "${modified_files[@]}"; do
+      echo "  $mf"
+    done
+    read -p "Overwrite these files? [y/N] " answer
+    if [[ ! "$answer" =~ ^[Yy] ]]; then
+      echo "Aborted."
+      exit 0
+    fi
+  fi
+fi
+
 # Copy files
 for f in $(cat filelist); do
   echo cp $f ${DESTDIR}/$f
@@ -30,6 +57,17 @@ for f in $(cat filelist); do
     cp $f ${DESTDIR}/$f
   fi
 done
+
+# Save checksums of installed files
+if [[ $dryrun == 0 ]]; then
+  mkdir -p "${DESTDIR}/.dotfiles"
+  > "$CHECKSUM_FILE"
+  for f in $(cat filelist); do
+    if [[ -f "${DESTDIR}/$f" ]]; then
+      md5sum "${DESTDIR}/$f" | sed "s|${DESTDIR}/||" >> "$CHECKSUM_FILE"
+    fi
+  done
+fi
 
 # Modify files
 [ ! -e $DESTDIR/.bashrc ] && touch $DESTDIR/.bashrc
