@@ -6,7 +6,7 @@ set -eu
 
 DOTFILES=$HOME/.dotfiles
 mkdir -p $DOTFILES
-curl -s -L $SRC_URL/dotfiles/update.sh -o $DOTFILES/update.sh
+curl -s -L "$SRC_URL/dotfiles/update.sh?$(date +%s)" -o $DOTFILES/update.sh
 
 bash $DOTFILES/update.sh
 
