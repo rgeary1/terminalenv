@@ -1,6 +1,20 @@
 DOTHOME=$(dirname ${(%):-%N})
 source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
+if [[ -e $HOME/.build-run.sh ]]; then
+ source $HOME/.build-run.sh
+fi
+
+export LESS=-RXIFBb1234567
+
+# Bash-like completion: 1st TAB completes, 2nd TAB lists
+unsetopt AUTO_LIST      # don't list on first TAB
+unsetopt AUTO_MENU      # don't start menu selection automatically
+setopt BASH_AUTO_LIST   # list matches on second TAB (bash style)
+
+# Optional: make directory completion feel more bash-like
+setopt AUTO_PARAM_SLASH # append / after directories
+setopt COMPLETE_IN_WORD # complete at cursor (bash-like)
 
 bindkey "^[[H" "beginning-of-line"
 bindkey "^[[F" "end-of-line"
@@ -18,6 +32,13 @@ export HOST=$HOST
 if [[ -d /opt/homebrew/opt/findutils/libexec/gnubin ]]; then
     addpath /opt/homebrew/opt/findutils/libexec/gnubin prefix
 fi
+
+unalias grep 2>/dev/null
+unalias cat 2>/dev/null
+unalias find 2>/dev/null
+alias g='grep -i'
+alias ll='lsd --long'
+alias lla='lsd --long --all'
 
 ZCOLOR_RED='%{%B%F{red}%}'
 ZCOLOR_BLUE='%{%B%F{blue}%}'
@@ -53,3 +74,10 @@ fi
 if [[ -e /usr/bin/lessfile ]]; then
   eval "$(lessfile)"
 fi
+
+makePathUnique () 
+{ 
+    PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':')
+}
+makePathUnique
+

@@ -6,7 +6,7 @@
 .shell_alias
 .tmux.conf
 .vimrc
-.zshrc
+.zshrc.local
 bin/tmux-a
 bin/tmux-restore-pane
 bin/colorpath
