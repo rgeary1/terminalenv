@@ -38,7 +38,7 @@ else
   done
 fi
 
-chmod +x "$SRCDIR/update.sh" "$SRCDIR/install.sh" "$SRCDIR/diff.sh"
+chmod +x "$SRCDIR/update.sh" "$SRCDIR/install.sh" "$SRCDIR/diff.sh" "$SRCDIR/.lessfilter"
 
 # Install the files
 "$SRCDIR/install.sh"
