@@ -6,6 +6,7 @@ dryrun=0
 mkdir -p $HOME/tmp
   
 export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master}
+export INSTALL_MOSH=${INSTALL_MOSH-0}
 
 if [[ "$0" == "-n" ]]; then
   echo "Dryrun mode"
@@ -77,27 +78,29 @@ grep -q '.zshrc.local' $DESTDIR/.zshrc || echo '[[ -f ~/.zshrc.local ]] && sourc
 chmod -R +x $DESTDIR/bin/
 
 # Install missing packages
-if which mosh >/dev/null 2>&1; then
-  echo "mosh installed"
-else
-  echo "Installing mosh..."
-  which yum >/dev/null 2>&1 && \
-    sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics g++ git
-  which apt-get >/dev/null 2>&1 && \
-    sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev g++ protobuf-compiler git curl make build-essential pkg-config 
-  ver=mosh-1.4.0
-  f=mosh-1.4.0.tar.gz
-  curl -s -L $SRC_URL/pkgs/$f -o $DESTDIR/tmp/$f
-  curl -s -L $SRC_URL/pkgs/${f}.SHA -o $DESTDIR/tmp/${f}.SHA
-  (cd $DESTDIR/tmp;
-    sha256sum -c ${f}.SHA
-    tar -C $DESTDIR/tmp -xf $f
-    cd $ver
-    ./configure
-    make
-    sudo make install
-  )
-  rm -rf $DESTDIR/tmp/*
+if [[ $INSTALL_MOSH == 1 ]]; then
+  if which mosh >/dev/null 2>&1; then
+    echo "mosh installed"
+  else
+    echo "Installing mosh..."
+    which yum >/dev/null 2>&1 && \
+      sudo yum install -y protobuf-devel ncurses-devel zlib-devel openssl-devel libutempter-devel perl-diagnostics g++ git
+    which apt-get >/dev/null 2>&1 && \
+      sudo apt-get install -y libprotoc-dev libncurses5-dev zlib1g-dev libssl-dev libutempter-dev g++ protobuf-compiler git curl make build-essential pkg-config 
+    ver=mosh-1.4.0
+    f=mosh-1.4.0.tar.gz
+    curl -s -L $SRC_URL/pkgs/$f -o $DESTDIR/tmp/$f
+    curl -s -L $SRC_URL/pkgs/${f}.SHA -o $DESTDIR/tmp/${f}.SHA
+    (cd $DESTDIR/tmp;
+      sha256sum -c ${f}.SHA
+      tar -C $DESTDIR/tmp -xf $f
+      cd $ver
+      ./configure
+      make
+      sudo make install
+    )
+    rm -rf $DESTDIR/tmp/*
+  fi
 fi
 
 # Installing tmux plugin manager
