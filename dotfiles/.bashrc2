@@ -108,6 +108,25 @@ function updatePS1 {
 }
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
+# Add direnv
+if [[ -e /usr/bin/direnv ]]; then
+  _direnv_hook() {
+    local previous_exit_status=$?;
+    trap -- '' SIGINT;
+    eval "$("/usr/bin/direnv" export bash)";
+    trap - SIGINT;
+    return $previous_exit_status;
+  };
+  if [[ ";${PROMPT_COMMAND[*]:-};" != *";_direnv_hook;"* ]]; then
+    if [[ "$(declare -p PROMPT_COMMAND 2>&1)" == "declare -a"* ]]; then
+      PROMPT_COMMAND=(_direnv_hook "${PROMPT_COMMAND[@]}")
+    else
+      PROMPT_COMMAND="_direnv_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+    fi
+  fi
+fi
+
+# Add pythonenv
 if [[ $UID == 0 ]]; then
   # Root user, simpler setup
   alias rm='rm -i'
@@ -143,4 +162,5 @@ mkdir -p $CCACHE_DIR
 if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
 
 fi # UID != 0
+
 
