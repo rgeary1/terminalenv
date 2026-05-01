@@ -59,6 +59,15 @@ for f in $(cat filelist); do
   fi
 done
 
+# Remove old files
+if [[ -e $DESTDIR/bin/jq ]]; then
+  rm -f ${DESTDIR}/bin/jq
+fi
+# Rename old files
+if [[ -e ${DESTDIR}/.bashrc2 ]]; then
+  mv $DESTDIR/.bashrc2 $DESTDIR/.bashrc.local
+fi
+
 # Save checksums of installed files
 if [[ $dryrun == 0 ]]; then
   mkdir -p "${DESTDIR}/.dotfiles"
@@ -72,7 +81,9 @@ fi
 
 # Modify files
 [ ! -e $DESTDIR/.bashrc ] && touch $DESTDIR/.bashrc
-grep -q 'source ~/.bashrc2' $DESTDIR/.bashrc || echo 'source ~/.bashrc2' >> $DESTDIR/.bashrc
+grep -q 'source ~/.bashrc.local' $DESTDIR/.bashrc || echo 'source ~/.bashrc.local' >> $DESTDIR/.bashrc
+# Remove old ref
+sed -i 's,^source ~/.bashrc2$,,' $DESTDIR/.bashrc
 [ ! -e $DESTDIR/.zshrc ] && touch $DESTDIR/.zshrc
 grep -q '.zshrc.local' $DESTDIR/.zshrc || echo '[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local' >> $DESTDIR/.zshrc
 chmod -R +x $DESTDIR/bin/

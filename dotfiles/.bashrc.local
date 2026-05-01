@@ -79,7 +79,7 @@ else
 fi
 
 export _ts_bashrc=$(stat -c%Y ~/.bashrc)
-export _ts_bashrc2=$(stat -c%Y ~/.bashrc2)
+export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
 
 function reloadTmuxUID {
   now=$(date +%s)
@@ -93,11 +93,11 @@ function reloadTmuxUID {
   fi
 }
 function reloadBashRC {
-    if [[ $(stat -c%Y ~/.bashrc2) != $_ts_bashrc2 || $(stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
+    if [[ $(stat -c%Y ~/.bashrc.local) != $_ts_bashrc_local || $(stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
         source ~/.bashrc
-        [ ! -z $_ts_bashrc2 ] && echo "Reloaded" >&2
+        [ ! -z $_ts_bashrc_local ] && echo "Reloaded" >&2
         export _ts_bashrc=$(stat -c%Y ~/.bashrc)
-        export _ts_bashrc2=$(stat -c%Y ~/.bashrc2)
+        export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
     fi
 }
 function updatePS1 {

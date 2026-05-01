@@ -67,5 +67,5 @@ git push  # using the SSH command above
 - `$DESTDIR` controls install target (defaults to `$HOME`)
 - All bin/ scripts must be listed in `dotfiles/filelist` to be deployed
 - After modifying dotfiles, run `./upload.sh` (or `./package.sh` + commit) to update the tarball
-- Shell support: bash and zsh (`.bashrc2` and `.zshrc`)
+- Shell support: bash and zsh (`.bashrc.local` and `.zshrc.local`)
 - Tmux prefix is `Ctrl-G` (not default `Ctrl-B`)

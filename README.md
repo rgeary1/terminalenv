@@ -12,7 +12,7 @@ This downloads everything to `~/.dotfiles/`, then copies files into place under 
 
 ## What's Included
 
-**Shell config:** `.bashrc2`, `.zshrc`, `.shell_alias`, `.git_alias`, `.inputrc`, `.vimrc`, `.gdbinit`, `.lessfilter`
+**Shell config:** `.bashrc.local`, `.zshrc`, `.shell_alias`, `.git_alias`, `.inputrc`, `.vimrc`, `.gdbinit`, `.lessfilter`
 
 **Tmux:** `.tmux.conf` with `Ctrl-G` prefix, tmux plugin manager (tpm) auto-installed
 
