@@ -117,12 +117,8 @@ if [[ -e /usr/bin/direnv ]]; then
     trap - SIGINT;
     return $previous_exit_status;
   };
-  if [[ ";${PROMPT_COMMAND[*]:-};" != *";_direnv_hook;"* ]]; then
-    if [[ "$(declare -p PROMPT_COMMAND 2>&1)" == "declare -a"* ]]; then
-      PROMPT_COMMAND=(_direnv_hook "${PROMPT_COMMAND[@]}")
-    else
-      PROMPT_COMMAND="_direnv_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
-    fi
+  if [[ ";${PROMPT_COMMAND:-};" != *";_direnv_hook;"* ]]; then
+    PROMPT_COMMAND="_direnv_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
   fi
 fi
 
@@ -138,7 +134,8 @@ else
     export PYENV_ROOT="$HOME/.pyenv"
     command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
+    # too slow
+    #eval "$(pyenv virtualenv-init -)"
   fi
 
 # disable middle button
