@@ -2,7 +2,7 @@
 
 case "$1" in
     *.md)
-        BIN=$HOME/.local/bin/mdv
+        BIN="$(command -v mdv)"
         ;;
     *)
         # We don't handle this format.
