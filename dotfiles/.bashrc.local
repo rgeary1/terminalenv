@@ -49,8 +49,9 @@ fi
 export EDITOR=vim
 alias vi=vim
 export HOST=${HOST-$(hostname)}
-export HOSTCOLOR="$COLOR_ORANGE"
-[ -e $HOME/.hostcolor ] && export HOSTCOLOR="$(head -1 $HOME/.hostcolor)"
+export HOST_COLOR="$COLOR_ORANGE"
+[ -e $HOME/.hostcolor ] && export HOST_COLOR="$(head -1 $HOME/.hostcolor)"
+[ -e $HOME/.bashrc.host ] && source $HOME/.bashrc.host
 
 function prependPath() { export PATH=$1:$PATH; makePathUnique; }
 function appendPath() { export PATH=$PATH:$1; makePathUnique; }
@@ -70,12 +71,16 @@ if [[ -d $HOME/go/bin ]]; then
   appendPath $HOME/go/bin
 fi
 
-if [[ $USER == root ]]; then
-  USER_COLOR=$COLOR_RED
-elif [[ $USER == "ec2-user" ]]; then
-  USER_COLOR=${COLOR_ORANGE}
-else
-  USER_COLOR=${COLOR_GREEN}
+if [[ ! -n $USER_COLOR ]]; then
+  if [[ $USER == root ]]; then
+    USER_COLOR=$COLOR_RED
+  elif [[ $USER == "ec2-user" ]]; then
+    USER_COLOR=${COLOR_ORANGE}
+   elif [[ $USER =~ prod* ]]; then
+     USER_COLOR=${COLOR_RED}
+  else
+    USER_COLOR="$COLOR_GREEN"
+  fi
 fi
 
 export _ts_bashrc=$(stat -c%Y ~/.bashrc)
@@ -104,7 +109,7 @@ function updatePS1 {
     EXITCODE=$?
     SHORTPWD=${PWD/#${HOME}/\~}
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
-    PS1="${USER_COLOR}\u${COLOR_NONE}@${HOSTCOLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
+    PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
 }
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
