@@ -73,11 +73,11 @@ fi
 
 if [[ ! -n $USER_COLOR ]]; then
   if [[ $USER == root ]]; then
-    USER_COLOR=$COLOR_RED
+    USER_COLOR=$COLOR_BRED
   elif [[ $USER == "ec2-user" ]]; then
     USER_COLOR=${COLOR_ORANGE}
    elif [[ $USER =~ prod* ]]; then
-     USER_COLOR=${COLOR_RED}
+     USER_COLOR=${COLOR_BRED}
   else
     USER_COLOR="$COLOR_GREEN"
   fi
@@ -108,7 +108,7 @@ function reloadBashRC {
 function updatePS1 {
     EXITCODE=$?
     SHORTPWD=${PWD/#${HOME}/\~}
-    [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_RED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
+    [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_BRED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
     PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
 }
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
