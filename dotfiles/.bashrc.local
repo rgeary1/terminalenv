@@ -53,9 +53,10 @@ export HOST_COLOR="$COLOR_ORANGE"
 [ -e $HOME/.hostcolor ] && export HOST_COLOR="$(head -1 $HOME/.hostcolor)"
 [ -e $HOME/.bashrc.host ] && source $HOME/.bashrc.host
 
-function prependPath() { export PATH=$1:$PATH; makePathUnique; }
-function appendPath() { export PATH=$PATH:$1; makePathUnique; }
-function makePathUnique() { PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':'); }
+function prependPath() { [ -d "$1" ] && export PATH=$1:$PATH; makePathUnique; }
+function appendPath() { [ -d "$1" ] && export PATH=$PATH:$1; makePathUnique; }
+function removePath() { export PATH=$(echo $PATH | /usr/bin/sed -e "s,:$1,," -e "s,$1:,,"); }
+function makePathUnique() { PATH=$(echo $PATH | /usr/bin/tr ':' '\n' | /usr/bin/awk '!seen[$0]++' | tr '\n' ':'); }
 
 appendPath ~/.local/bin
 appendPath ~/qbm/core/build
@@ -87,10 +88,10 @@ export _ts_bashrc=$(stat -c%Y ~/.bashrc)
 export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
 
 function reloadTmuxUID {
-  now=$(date +%s)
+  now=$(/usr/bin/date +%s)
   if [[ $now -gt $_ts_tmux ]]; then
     #export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
-    export TMUX_UID=$(tty | cut -d/ -f4)
+    export TMUX_UID=$(/usr/bin/tty | /usr/bin/cut -d/ -f4)
     export _ts_tmux=$(($now+86400))
     export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
     echo "HISTFILE=$HISTFILE"
@@ -98,11 +99,11 @@ function reloadTmuxUID {
   fi
 }
 function reloadBashRC {
-    if [[ $(stat -c%Y ~/.bashrc.local) != $_ts_bashrc_local || $(stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
+    if [[ $(/usr/bin/stat -c%Y ~/.bashrc.local) != $_ts_bashrc_local || $(/usr/bin/stat -c%Y ~/.bashrc) != $_ts_bashrc ]]; then
         source ~/.bashrc
         [ ! -z $_ts_bashrc_local ] && echo "Reloaded" >&2
-        export _ts_bashrc=$(stat -c%Y ~/.bashrc)
-        export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
+        export _ts_bashrc=$(/usr/bin/stat -c%Y ~/.bashrc)
+        export _ts_bashrc_local=$(/usr/bin/stat -c%Y ~/.bashrc.local)
     fi
 }
 function updatePS1 {
