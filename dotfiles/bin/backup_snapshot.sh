@@ -5,7 +5,7 @@ set -x
 BACKUP_SRC=${BACKUP_SRC-$HOME/qbm}
 
 nowu=$(date +%s)
-now=$(date -d@$nowu +%Y-%m-%dT%H:%M:%S)
+now=$(date -d@$nowu +%Y-%m-%dT%H.%M.%S)
 HOSTS="localhost"
 
 if [[ "$@" != "" ]]; then
@@ -33,13 +33,14 @@ for HOST in ${HOSTS}; do
     mv $BACKUP_DIR/$snapshot_name $BACKUP_DIR/failed-$snapshot_name
     mv $BACKUP_DIR/$HOST.$now.log $BACKUP_DIR/failed-$HOST.$now.log
     echo "Failed, logs are at $BACKUP_DIR/failed-$HOST.$now.log"
+    exit 1
   fi
 
   # Remove old dirs (>60 days)
   oldu=$(($nowu - 60*3600*24))
   for d in $(cd $BACKUP_DIR; ls -d snapshot.*); do
     timestr=$(echo $d | sed 's,snapshot.,,')
-    timeu=$(date -d"$timestr" +%s)
+    timeu=$(date +%s -d"$(echo $timestr | tr '.' ':')")
     if [[ $timeu -gt 0 && $timeu -lt $oldu ]]; then
       echo "Removing $BACKUP_DIR/$d"
       rm -rf $BACKUP_DIR/$d

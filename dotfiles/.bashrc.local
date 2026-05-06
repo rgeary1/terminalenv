@@ -90,8 +90,9 @@ export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
 function reloadTmuxUID {
   now=$(/usr/bin/date +%s)
   if [[ $now -gt $_ts_tmux ]]; then
-    #export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
-    export TMUX_UID=$(/usr/bin/tty | /usr/bin/cut -d/ -f4)
+    export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
+    (sleep 1 & wait $!) 2>/dev/null >/dev/null
+    #export TMUX_UID=$(tty | cut -d/ -f4)
     export _ts_tmux=$(($now+86400))
     export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
     echo "HISTFILE=$HISTFILE"
