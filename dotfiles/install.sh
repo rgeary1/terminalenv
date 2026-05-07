@@ -4,7 +4,7 @@ set -euo pipefail
 cd -- $(dirname $(readlink -f -- "$0"))
 dryrun=0
 mkdir -p $HOME/tmp
-  
+
 export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master}
 export INSTALL_MOSH=${INSTALL_MOSH-0}
 
@@ -18,21 +18,23 @@ if [[ ! -d ${HOME:?} || ! -w $HOME ]]; then
     echo 'No writeable $HOME'
     exit 1
 fi
-export DESTDIR=${DESTDIR-$HOME}
+export DESTDIR="${DESTDIR-$HOME}"
+export DOTFILES_DIR="$DESTDIR/.dotfiles"
 
 # Make dirs
 echo "Installing to $DESTDIR"
-mkdir -p ${DESTDIR}/bin
+mkdir -p "${DESTDIR}/bin"
 
 # Check for locally modified files before overwriting
-CHECKSUM_FILE="${DESTDIR}/.dotfiles/.installed_checksums"
+CHECKSUM_FILE="${DOTFILES_DIR}/.installed_checksums"
 if [[ -f "$CHECKSUM_FILE" && $dryrun == 0 ]]; then
   modified_files=()
   while IFS='  ' read -r saved_sum fpath; do
     dest="${DESTDIR}/${fpath}"
     if [[ -f "$dest" ]]; then
       current_sum=$(md5sum "$dest" | cut -d' ' -f1)
-      if [[ "$current_sum" != "$saved_sum" ]]; then
+      new_sum=$(md5sum "$DOTFILES_DIR/${fpath}" | cut -d' ' -f1)
+      if [[ "$current_sum" != "$saved_sum" && "$current_sum" != "$new_sum" ]]; then
         modified_files+=("$fpath")
       fi
     fi
@@ -70,7 +72,7 @@ fi
 
 # Save checksums of installed files
 if [[ $dryrun == 0 ]]; then
-  mkdir -p "${DESTDIR}/.dotfiles"
+  mkdir -p "${DOTFILES_DIR}"
   > "$CHECKSUM_FILE"
   for f in $(cat filelist); do
     if [[ -f "${DESTDIR}/$f" ]]; then

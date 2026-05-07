@@ -91,7 +91,7 @@ function reloadTmuxUID {
   now=$(/usr/bin/date +%s)
   if [[ $now -gt $_ts_tmux ]]; then
     export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
-    (sleep 1 & wait $!) 2>/dev/null >/dev/null
+    #(sleep 1 & wait $!) 2>/dev/null >/dev/null
     #export TMUX_UID=$(tty | cut -d/ -f4)
     export _ts_tmux=$(($now+86400))
     export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
@@ -113,6 +113,7 @@ function updatePS1 {
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_BRED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
     PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
 }
+export _ts_tmux=$(/usr/bin/date +%s)
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
 # Add direnv
