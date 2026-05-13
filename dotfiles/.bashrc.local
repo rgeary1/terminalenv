@@ -22,7 +22,7 @@ mkdir -p ~/.bash_history.d
 
 # -Bb1234567 will limit memory to 1.2Gb, prevents OOMs
 export LESS="-RXIFBb1234567"
-export SYSTEMD_LESS="FRXMK" 
+export SYSTEMD_LESS="FRXMK"
 
 # check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
 shopt -s checkwinsize
@@ -56,15 +56,16 @@ export HOST_COLOR="$COLOR_ORANGE"
 function prependPath() { [ -d "$1" ] && export PATH=$1:$PATH; makePathUnique; }
 function appendPath() { [ -d "$1" ] && export PATH=$PATH:$1; makePathUnique; }
 function removePath() { export PATH=$(echo $PATH | /usr/bin/sed -e "s,:$1,," -e "s,$1:,,"); }
-function makePathUnique() { PATH=$(echo $PATH | /usr/bin/tr ':' '\n' | /usr/bin/awk '!seen[$0]++' | tr '\n' ':'); }
+function makePathUnique() { PATH=$(echo $PATH | /usr/bin/tr ':' '\n' | /usr/bin/awk '!seen[$0]++' | tr '\n' ':' | sed 's,::*,:,g'); }
 
 appendPath ~/.local/bin
 appendPath ~/qbm/core/build
+appendPath ~/.npm/global/bin
 
 # Rust
 if [[ -d $HOME/.cargo/env ]]; then
   appendPath $HOME/.cargo/bin
-  source $HOME/.cargo/env 
+  source $HOME/.cargo/env
 fi
 
 # Go
@@ -116,6 +117,14 @@ function updatePS1 {
 export _ts_tmux=$(/usr/bin/date +%s)
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
+# Usage: limitmem 32G <command>
+limitmem() {
+  local max="$1"; shift
+  systemd-run --user --scope --quiet \
+    -p MemoryMax="$max" -p MemorySwapMax=0 \
+    -- "$@"
+}
+
 # Add direnv
 if [[ -e /usr/bin/direnv ]]; then
   _direnv_hook() {
@@ -156,15 +165,26 @@ alias t='build-run test'
 alias c='build-run check'
 
 export NINJA_STATUS='[%f/%t+%r] '
-export CCACHE_DIR=$HOME/.ccache
+if [[ ! -e /build/$USER ]]; then
+  export CCACHE_DIR=$HOME/.cache/ccache
+  export CPP_BUILD_ROOT=$HOME/.build/cpp-build
+  export CARGO_TARGET_ROOT=$HOME/.build/cargo-target
+  CCACHE_DIR=$(readlink -f $CCACHE_DIR)
+  CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
+  CARGO_TARGET_ROOT=$(readlink -f $CARGO_TARGET_ROOT)
+else
+  export CCACHE_DIR=/build/$USER/.cache/ccache
+  export CPP_BUILD_ROOT=/build/$USER/cpp-build
+  export CARGO_TARGET_ROOT=/build/$USER/cargo-target
+fi
 ncores=$(cat /proc/cpuinfo | grep '^model name' | wc -l)
 isolcpus=$(cat /proc/cmdline | grep -o 'isolcpus=[^ ]*' | head -1 | cut -d= -f2)
 isolcpus="$((1-1 * (${isolcpus}+0) ))"
 ncores=$(($ncores-$isolcpus))
 export MAKEFLAGS="-j$ncores"
-mkdir -p $CCACHE_DIR
+mkdir -p $CCACHE_DIR $CPP_BUILD_ROOT $CARGO_TARGET_ROOT
 
-if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
+appendPath $HOME/.local/share/npm/bin
 
 fi # UID != 0
 

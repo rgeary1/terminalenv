@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -eu
 
 BACKUP_SRC=${BACKUP_SRC-$HOME/qbm}
 
@@ -20,8 +20,10 @@ for HOST in ${HOSTS}; do
 
   snapshot_name=snapshot.$now
   if [[ $HOST == localhost ]]; then
+    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1"
     rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1
   else 
+    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1"
     rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1
   fi
 
@@ -47,3 +49,5 @@ for HOST in ${HOSTS}; do
     fi
   done
 done
+
+echo "Done"

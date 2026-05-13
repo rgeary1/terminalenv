@@ -1,3 +1,11 @@
 #!/bin/bash
 
-exec find ${1-.} -name target -prune -o -name .git -prune -o -type f -print
+if command -v fd >/dev/null; then 
+  path=${1-.}
+  if [[ ${path} == */* ]]; then
+    flags="--full-path"
+  fi
+  exec fd ${flags-} -t f ${path}
+else
+  exec find ${1-.} -name target -prune -o -name .git -prune -o -type f -print
+fi
