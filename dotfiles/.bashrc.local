@@ -180,7 +180,6 @@ mkdir -p $CCACHE_DIR $CPP_BUILD_ROOT $CARGO_TARGET_ROOT
 CCACHE_DIR=$(readlink -f $CCACHE_DIR)
 CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
 CARGO_TARGET_ROOT=$(readlink -f $CARGO_TARGET_ROOT)
-unset CARGO_TARGET_DIR # temporary
 
 if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
 
