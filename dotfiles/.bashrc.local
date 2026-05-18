@@ -90,14 +90,16 @@ export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
 
 function reloadTmuxUID {
   now=$(/usr/bin/date +%s)
-  if [[ $now -gt $_ts_tmux ]]; then
-    export TMUX_UID=$(tmux display-message -p '#S.#I.#P' 2>/dev/null || true)
+  if [[ -z "$TMUX_UID" || $now -gt $_ts_tmux ]]; then
+    export TMUX_UID=$([ -n "$TMUX_PANE" ] && tmux display-message -pt "${TMUX_PANE:?}" '#S.#I.#P' 2>/dev/null || true)
     #(sleep 1 & wait $!) 2>/dev/null >/dev/null
     #export TMUX_UID=$(tty | cut -d/ -f4)
     export _ts_tmux=$(($now+86400))
-    export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
-    echo "HISTFILE=$HISTFILE"
-    history -r
+    if [[ "$HISTFILE" != "$HOME/.bash_history.d/t.${TMUX_UID}" ]]; then
+      export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
+      echo "HISTFILE=$HISTFILE"
+      history -r
+    fi
   fi
 }
 function reloadBashRC {
@@ -114,7 +116,8 @@ function updatePS1 {
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_BRED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
     PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
 }
-export _ts_tmux=$(/usr/bin/date +%s)
+#export _ts_tmux=$(/usr/bin/date +%s)
+reloadTmuxUID
 export PROMPT_COMMAND="updatePS1; history -a; reloadBashRC; reloadTmuxUID"
 
 # Usage: limitmem 32G <command>
@@ -165,26 +168,21 @@ alias t='build-run test'
 alias c='build-run check'
 
 export NINJA_STATUS='[%f/%t+%r] '
-if [[ ! -e /build/$USER ]]; then
-  export CCACHE_DIR=$HOME/.cache/ccache
-  export CPP_BUILD_ROOT=$HOME/.build/cpp-build
-  export CARGO_TARGET_ROOT=$HOME/.build/cargo-target
-  CCACHE_DIR=$(readlink -f $CCACHE_DIR)
-  CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
-  CARGO_TARGET_ROOT=$(readlink -f $CARGO_TARGET_ROOT)
-else
-  export CCACHE_DIR=/build/$USER/.cache/ccache
-  export CPP_BUILD_ROOT=/build/$USER/cpp-build
-  export CARGO_TARGET_ROOT=/build/$USER/cargo-target
-fi
+export CCACHE_DIR=$HOME/.cache/ccache
+export CPP_BUILD_ROOT=$HOME/.build/cpp-build
+export CARGO_TARGET_ROOT=$HOME/.build/cargo-target
 ncores=$(cat /proc/cpuinfo | grep '^model name' | wc -l)
 isolcpus=$(cat /proc/cmdline | grep -o 'isolcpus=[^ ]*' | head -1 | cut -d= -f2)
 isolcpus="$((1-1 * (${isolcpus}+0) ))"
 ncores=$(($ncores-$isolcpus))
 export MAKEFLAGS="-j$ncores"
 mkdir -p $CCACHE_DIR $CPP_BUILD_ROOT $CARGO_TARGET_ROOT
+CCACHE_DIR=$(readlink -f $CCACHE_DIR)
+CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
+CARGO_TARGET_ROOT=$(readlink -f $CARGO_TARGET_ROOT)
+unset CARGO_TARGET_DIR # temporary
 
-appendPath $HOME/.local/share/npm/bin
+if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
 
 fi # UID != 0
 

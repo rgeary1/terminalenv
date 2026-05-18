@@ -24,6 +24,7 @@ bindkey "^[[1;5D" "backward-word"
 bindkey "^[[1;5C" "forward-word"
 bindkey "^[[3;5~" "kill-word"
 bindkey "^H" "backward-kill-word"
+bindkey "^R" "history-incremental-search-backward"
 
 export WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
@@ -36,9 +37,13 @@ fi
 unalias grep 2>/dev/null
 unalias cat 2>/dev/null
 unalias find 2>/dev/null
+unalias gd 2>/dev/null
 alias g='grep -i'
 alias ll='lsd --long'
 alias lla='lsd --long --all'
+
+# Allow * unmatched globs to pass through as '*'
+setopt nonomatch
 
 ZCOLOR_RED='%{%B%F{red}%}'
 ZCOLOR_BLUE='%{%B%F{blue}%}'
@@ -59,7 +64,22 @@ function updatePS1 {
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${ZCOLOR_RED}$EXITCODE${ZCOLOR_NONE}" || EXIT_SUFFIX="${ZCOLOR_NONE}";
     PS1="${USER_COLOR[$USER]}%n${ZCOLOR_NONE}@${ZCOLOR_ORANGE}%m ${ZCOLOR_BLUE}%~${EXIT_SUFFIX}${ZSH_NEWLINE}$ "
 }
-precmd() { updatePS1; }
+function reloadTmuxUID {
+  now=$(/usr/bin/date +%s)
+  if [[ -z "$TMUX_UID" || $now -gt $_ts_tmux ]]; then
+    export TMUX_UID=$([ -n "$TMUX_PANE" ] && tmux display-message -pt "${TMUX_PANE:?}" '#S.#I.#P' 2>/dev/null || true)
+    #(sleep 1 & wait $!) 2>/dev/null >/dev/null
+    #export TMUX_UID=$(tty | cut -d/ -f4)
+    export _ts_tmux=$(($now+86400))
+    if [[ "$HISTFILE" != "$HOME/.bash_history.d/t.${TMUX_UID}" ]]; then
+      export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
+      echo "HISTFILE=$HISTFILE"
+      fc -R "$HISTFILE"
+    fi
+  fi
+}
+precmd() { updatePS1; reloadTmuxUID; }
+reloadTmuxUID
 
 if [[ -e $HOME/.pyenv ]]; then
   export PYENV_ROOT="$HOME/.pyenv"

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+function help {
+  echo "git ignore <file|path>"
+  echo "  Adds the file or path to the .gitignore file"
+}
+
+if [[ $# == 0 ]]; then
+  help
+  exit 1
+fi
+file=$1
+if [[ -d $file ]]; then
+  echo "$(basename $file)/" >> .gitignore
+elif [[ ! -e $file ]]; then
+  >&2 echo "$file does not exist"
+  exit 1
+else
+  echo "$(basename $file)" >> .gitignore
+fi

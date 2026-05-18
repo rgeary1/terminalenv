@@ -9,7 +9,7 @@ alias sortu='sort -u'
 alias sortn='sort -n'
 alias tailf='tail -F'
 alias wcl='wc -l'
-alias jq='/usr/bin/jq -C'
+function jq() { if [ -t 1 ]; then /usr/bin/jq -C "$@"; else /usr/bin/jq "$@"; fi; }
 
 if [[ ${OSTYPE:0:6} == "darwin" ]]; then
   alias xargs='gxargs'
@@ -57,7 +57,7 @@ function sum1 {
 function ssh_wrap() {
     if [[ -n "$TMUX" && -t 1 ]]; then
         # Extract hostname (handles user@host and plain host)
-        local host=$(echo "$@" | sed -E 's, -[^ ;]*,,' | awk '{print $NF}' | sed 's/.*@//')
+        local host=$(echo "$@" | sed -E 's, -[^ ;]*,,' | awk '{print $1}' | sed 's/.*@//')
         tmux rename-window "$host"
         command /usr/bin/ssh "$@"
         tmux set-window-option automatic-rename on >/dev/null
