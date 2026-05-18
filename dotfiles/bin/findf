@@ -1,3 +1,9 @@
 #!/bin/bash
 
-exec find ${1-.} -name target -prune -o -name .git -o -name .beads -prune -o -type f -print
+if [[ $# -lt 1 ]]; then
+  path=.
+else
+  path="$@"
+fi
+
+exec 2>/dev/null find ${path} -name target -prune -o -name .git -o -name .beads -prune -o -type f -print
