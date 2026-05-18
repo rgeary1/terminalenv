@@ -99,5 +99,6 @@ makePathUnique ()
 { 
     PATH=$(echo $PATH | tr ':' '\n' | awk '!seen[$0]++' | tr '\n' ':')
 }
+PATH=$HOME/bin:$PATH
 makePathUnique
 
