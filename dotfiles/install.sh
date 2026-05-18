@@ -43,7 +43,9 @@ if [[ -f "$CHECKSUM_FILE" && $dryrun == 0 ]]; then
   if [[ ${#modified_files[@]} -gt 0 ]]; then
     echo "WARNING: The following files have been locally modified:"
     for mf in "${modified_files[@]}"; do
-      echo "  $mf"
+      current_sum=$(md5sum "$dest" | cut -d' ' -f1)
+      new_sum=$(md5sum "$DOTFILES_DIR/${fpath}" | cut -d' ' -f1)
+      echo "  $mf   current:$current_sum  new:$new_sum"
     done
     read -p "Overwrite these files? [y/N] " answer
     if [[ ! "$answer" =~ ^[Yy] ]]; then
