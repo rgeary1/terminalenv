@@ -18,7 +18,7 @@ for arg in "$@"; do
   fi
 done
 
-# Get files
+# Get files, repath to git repo root
 files=()
 params=()
 for arg in ${not_opts[@]}; do
@@ -26,8 +26,9 @@ for arg in ${not_opts[@]}; do
     files+=("$arg")
     continue
   fi
-  file=$(git ls-files -- "*${arg}")
-  if [[ "$file" != "" && "$arg" != "." ]]; then
+  file=$(git ls-files -- "*${arg}" | head -1)
+  [[ ${#file} == 0 ]] && file=$(git ls-files -- "${arg}" | head -1)
+  if [[ "$file" != "" ]]; then
     files+=("$file")
   else
     params+=("$arg")

@@ -20,11 +20,11 @@ for HOST in ${HOSTS}; do
 
   snapshot_name=snapshot.$now
   if [[ $HOST == localhost ]]; then
-    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1"
-    rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1
+    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.log 2>&1"
+    rsync -avPh --delete --link-dest=$BACKUP_DIR/current $BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.log 2>&1
   else 
-    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1"
-    rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.$now.log 2>&1
+    echo "rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.log 2>&1"
+    rsync -avPh --delete --link-dest=$BACKUP_DIR/current $HOST:$BACKUP_SRC $BACKUP_DIR/$snapshot_name > $BACKUP_DIR/$HOST.log 2>&1
   fi
 
   if [[ $? == 0 ]]; then
@@ -33,8 +33,8 @@ for HOST in ${HOSTS}; do
   else
     # Rename dir if failed
     mv $BACKUP_DIR/$snapshot_name $BACKUP_DIR/failed-$snapshot_name
-    mv $BACKUP_DIR/$HOST.$now.log $BACKUP_DIR/failed-$HOST.$now.log
-    echo "Failed, logs are at $BACKUP_DIR/failed-$HOST.$now.log"
+    mv $BACKUP_DIR/$HOST.log $BACKUP_DIR/failed-$HOST.log
+    echo "Failed, logs are at $BACKUP_DIR/failed-$HOST.log"
     exit 1
   fi
 

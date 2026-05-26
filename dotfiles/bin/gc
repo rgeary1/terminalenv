@@ -2,7 +2,8 @@
 set -eu
 
 cd $(find-root .git)
-touch .git/git_message
+GIT_DIR="$(git rev-parse --git-dir)"
+touch "$GIT_DIR/git_message" || true
 args=()
 message=""
 for arg in "$@"; do
@@ -21,11 +22,11 @@ if [[ "$message" != "" ]]; then
   args+=("${message:2}")
 fi
     
-git commit -t .git/git_message "${args[@]}"
+git commit -t "$GIT_DIR/git_message" "${args[@]}"
 rv=$?
 if [[ $rv == 0 ]]; then
   if [[ ! "$@" =~ "-m" ]]; then
-    rm -f .git/git_message
+    rm -f "$GIT_DIR/git_message"
   fi
 fi
 exit $rv
