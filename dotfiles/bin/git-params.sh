@@ -26,8 +26,8 @@ for arg in ${not_opts[@]}; do
     files+=("$arg")
     continue
   fi
-  file=$(git ls-files -- "*${arg}" | head -1)
-  [[ ${#file} == 0 ]] && file=$(git ls-files -- "${arg}" | head -1)
+  file=$(git ls-files -- "*${arg}")
+  [[ ${#file} == 0 ]] && file=$(git ls-files -- "${arg}")
   if [[ "$file" != "" ]]; then
     files+=("$file")
   else

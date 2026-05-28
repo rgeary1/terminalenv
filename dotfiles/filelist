@@ -8,6 +8,7 @@
 .vimrc
 .zshrc.local
 bin/colorpath
+bin/clean
 bin/field
 bin/findf
 bin/find-root

@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ $# == 0 ]]; then
+  /usr/bin/sed 's/\x1b\[[0-9;]*[a-zA-Z]//g'
+else 
+  /usr/bin/sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | "$@"
+fi
+
