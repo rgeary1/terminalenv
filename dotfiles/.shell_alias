@@ -6,8 +6,9 @@ alias hexd='hexdump -v -e "\"%08_ad  \" 16/1 \"%02x \" \"   \" 16/1 \"%02x \" \"
 alias ll='ls -l --color'
 alias lla='ls -l --color -a'
 alias man23='man -s2,3'
-alias sortu='sort -u'
-alias sortn='sort -n'
+alias sort='clean sort'
+alias sortu='clean sort -u'
+alias sortn='clean sort -n'
 alias tailf='tail -F'
 alias wcl='wc -l'
 function jq() { if [ -t 1 ]; then /usr/bin/jq -C "$@"; else /usr/bin/jq "$@"; fi; }

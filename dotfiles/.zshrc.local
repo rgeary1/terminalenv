@@ -16,15 +16,15 @@ setopt BASH_AUTO_LIST   # list matches on second TAB (bash style)
 setopt AUTO_PARAM_SLASH # append / after directories
 setopt COMPLETE_IN_WORD # complete at cursor (bash-like)
 
-bindkey "^[[H" "beginning-of-line"
-bindkey "^[[F" "end-of-line"
-bindkey "^[^[[D" "backward-word"
-bindkey "^[^[[C" "forward-word"
-bindkey "^[[1;5D" "backward-word"
-bindkey "^[[1;5C" "forward-word"
-bindkey "^[[3;5~" "kill-word"
-bindkey "^H" "backward-kill-word"
-bindkey "^R" "history-incremental-search-backward"
+bindkey "^[[H" "beginning-of-line" 2>/dev/null
+bindkey "^[[F" "end-of-line" 2>/dev/null
+bindkey "^[^[[D" "backward-word" 2>/dev/null
+bindkey "^[^[[C" "forward-word" 2>/dev/null
+bindkey "^[[1;5D" "backward-word" 2>/dev/null
+bindkey "^[[1;5C" "forward-word" 2>/dev/null
+bindkey "^[[3;5~" "kill-word" 2>/dev/null
+bindkey "^H" "backward-kill-word" 2>/dev/null
+bindkey "^R" "history-incremental-search-backward" 2>/dev/null
 
 export WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 

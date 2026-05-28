@@ -12,6 +12,8 @@ fi
 # GDB
 export DEBUGINFOD_MAX_UNUSED_AGE_S=986400
 
+# Better timestamps
+export LC_TIME=en_AU.utf8
 
 # append to the history file, don't overwrite it
 shopt -s histappend

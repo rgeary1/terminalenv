@@ -16,3 +16,6 @@ git commit --amend --no-edit
 # Push
 echo "Pushing to GitHub..."
 SSH_AGENT='' SSH_AUTH_SOCK='' GIT_SSH_COMMAND="$GIT_SSH_CMD" git push --force-with-lease
+
+# Update ~/.dotfiles
+tar -xf dotfiles.tar.gz -C $HOME/.dotfiles/
