@@ -1,3 +1,4 @@
+GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Get options and params
 not_opts=()
@@ -18,6 +19,20 @@ for arg in "$@"; do
   fi
 done
 
+# Test if we want to git log another repo
+if [[ ${#not_opts[@]} -gt 0 ]]; then
+  f=${not_opts[0]}
+  if [[ -e $f ]]; then
+    d=$(dirname $f)
+    other_git_root=$(cd $d && git rev-parse --show-toplevel)
+    rel_path=$(realpath --relative-to $other_git_root $f)
+    if [[ "${rel_path:0:2}" == ".." ]]; then
+      not_opts[0]=$rel_path
+      cd $other_git_root
+    fi
+  fi
+fi
+
 # Get files, repath to git repo root
 files=()
 params=()
@@ -30,6 +45,8 @@ for arg in ${not_opts[@]}; do
   [[ ${#file} == 0 ]] && file=$(git ls-files -- "${arg}")
   if [[ "$file" != "" ]]; then
     files+=("$file")
+  elif [[ "$arg" =~ "/" ]]; then
+    files+=("$arg")
   else
     params+=("$arg")
   fi

@@ -59,7 +59,7 @@ function sum1 {
 function ssh_wrap() {
     if [[ -n "$TMUX" && -t 1 ]]; then
         # Extract hostname (handles user@host and plain host)
-        local host=$(echo "$@" | sed -E 's, -[^ ;]*,,' | awk '{print $1}' | sed 's/.*@//')
+        local host=$(echo "$@" | sed -E -e 's, -[^ ;]*,,g' -e 's,-[Oo] ([^ ;]*|"[^"]*") ,,g' | awk '{print $1}' | sed 's/.*@//')
         tmux rename-window "$host"
         command /usr/bin/ssh "$@"
         tmux set-window-option automatic-rename on >/dev/null

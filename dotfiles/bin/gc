@@ -1,7 +1,6 @@
 #!/bin/bash
 set -eu
 
-cd $(find-root .git)
 GIT_DIR="$(git rev-parse --git-dir)"
 touch "$GIT_DIR/git_message" || true
 args=()

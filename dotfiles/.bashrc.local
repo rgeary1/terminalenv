@@ -61,6 +61,7 @@ function removePath() { export PATH=$(echo $PATH | /usr/bin/sed -e "s,:$1,," -e 
 function makePathUnique() { PATH=$(echo $PATH | /usr/bin/tr ':' '\n' | /usr/bin/awk '!seen[$0]++' | tr '\n' ':' | sed 's,::*,:,g'); }
 
 appendPath ~/.local/bin
+appendPath ~/go/bin
 appendPath ~/qbm/core/build
 appendPath ~/.npm/global/bin
 
