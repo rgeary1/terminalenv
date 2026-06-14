@@ -100,7 +100,7 @@ function reloadTmuxUID {
     export _ts_tmux=$(($now+86400))
     if [[ "$HISTFILE" != "$HOME/.bash_history.d/t.${TMUX_UID}" ]]; then
       export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"
-      echo "HISTFILE=$HISTFILE" >&2
+      #echo "HISTFILE=$HISTFILE" >&2
       history -r
     fi
   fi

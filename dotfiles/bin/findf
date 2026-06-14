@@ -1,9 +1,21 @@
 #!/bin/bash
 
-if [[ $# -lt 1 ]]; then
+args=()
+path=""
+for arg in "$@"; do
+  if [[ -z $path && ${arg:0:1} != "-" ]]; then
+    path=$arg
+  else
+    args+=("$arg")
+  fi
+done
+if [[ -z $path ]]; then
   path=.
-else
-  path="$@"
 fi
 
-exec 2>/dev/null find ${path} -name target -prune -o -name .git -o -name .beads -prune -o -type f -print
+FD_BIN=$(which fd 2>/dev/null)
+if [[ -n "$FD_BIN" ]]; then
+  exec "$FD_BIN" . "$path" "${args[@]}" -tf
+else
+  exec 2>/dev/null find ${path} "${args[@]}" -name target -prune -o -name .git -o -name .beads -prune -o -type f -print
+fi
