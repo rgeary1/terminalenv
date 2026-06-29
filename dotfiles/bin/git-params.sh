@@ -3,10 +3,12 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 # Get options and params
 not_opts=()
 opts=()
+files=()
+params=()
 dashdash=0
 for arg in "$@"; do
   if [[ $dashdash == 1 ]]; then
-    not_opts+=("$arg")
+    files+=("$arg")
   elif [[ ${arg:0:1} == "-" ]]; then
     # Everything after -- is treated as a param
     if [[ $arg == "--" ]]; then
@@ -34,11 +36,13 @@ if [[ ${#not_opts[@]} -gt 0 ]]; then
 fi
 
 # Get files, repath to git repo root
-files=()
-params=()
 for arg in ${not_opts[@]}; do
   if [[ "$arg" == "." ]]; then
     files+=("$arg")
+    continue
+  fi
+  if [[ "$arg" == "HEAD" || "${arg:0:6}" == "origin" ]]; then
+    params+=("$arg")
     continue
   fi
   file=$(git ls-files -- "*${arg}")

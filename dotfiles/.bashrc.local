@@ -2,13 +2,6 @@ export DOTHOME=$(dirname ${BASH_SOURCE[0]})
 source $DOTHOME/.shell_alias
 source $DOTHOME/.git_alias
 
-# GPG Yubikey
-if [[ -d $HOME/.gnupg && $UID != 0 ]]; then
-  export GPG_TTY="$(tty)"
-  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
-  gpg-connect-agent updatestartuptty /bye > /dev/null
-fi
-
 # GDB
 export DEBUGINFOD_MAX_UNUSED_AGE_S=986400
 
@@ -20,6 +13,7 @@ shopt -s histappend
 HISTSIZE=1000
 HISTFILESIZE=2000
 HISTCONTROL=ignoreboth
+export HISTFORMAT='%F %T '
 mkdir -p ~/.bash_history.d
 
 # -Bb1234567 will limit memory to 1.2Gb, prevents OOMs
@@ -64,6 +58,7 @@ appendPath ~/.local/bin
 appendPath ~/go/bin
 appendPath ~/qbm/core/build
 appendPath ~/.npm/global/bin
+prependPath ~/bin
 
 # Rust
 if [[ -d $HOME/.cargo/env ]]; then
@@ -94,9 +89,7 @@ export _ts_bashrc_local=$(stat -c%Y ~/.bashrc.local)
 function reloadTmuxUID {
   now=$(/usr/bin/date +%s)
   if [[ -z "$TMUX_UID" || $now -gt $_ts_tmux ]]; then
-    export TMUX_UID=$([ -n "$TMUX_PANE" ] && tmux display-message -pt "${TMUX_PANE:?}" '#S.#I.#P' 2>/dev/null || true)
-    #(sleep 1 & wait $!) 2>/dev/null >/dev/null
-    #export TMUX_UID=$(tty | cut -d/ -f4)
+    [ -n "$TMUX_PANE" ] && export TMUX_UID=$(tmux display-message -pt "${TMUX_PANE:?}" '#S.#I.#P' 2>/dev/null || true)
     export _ts_tmux=$(($now+86400))
     if [[ "$HISTFILE" != "$HOME/.bash_history.d/t.${TMUX_UID}" ]]; then
       export HISTFILE="$HOME/.bash_history.d/t.${TMUX_UID}"

@@ -6,6 +6,7 @@ if [[ ${VERBOSE-0} == 1 ]]; then
 2>&1 echo "opts   ${opts[@]}"
 2>&1 echo "params ${params[@]}"
 2>&1 echo "files  ${files[@]}"
+2>&1 echo "+ git log --stat ${opts[@]} ${params[@]} -- ${files[@]}"
 fi
 
 git log --stat ${opts[@]} ${params[@]} -- ${files[@]}
