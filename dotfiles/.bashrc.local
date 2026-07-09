@@ -109,8 +109,10 @@ function reloadBashRC {
 function updatePS1 {
     EXITCODE=$?
     SHORTPWD=${PWD/#${HOME}/\~}
+    njobs=$(jobs | wc -l)
+    [ $njobs -gt 0 ] && JOBS_SUFFIX="${COLOR_BGRAY}[$njobs]" || JOBS_SUFFIX="";
     [ $EXITCODE != 0 ] && EXIT_SUFFIX=":${COLOR_BRED}$EXITCODE${COLOR_NONE}" || EXIT_SUFFIX="${COLOR_NONE}";
-    PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
+    PS1="${USER_COLOR}\u${COLOR_NONE}@${HOST_COLOR}\h${JOBS_SUFFIX} ${COLOR_BLUE}${SHORTPWD}${EXIT_SUFFIX}\n$ "
 }
 #export _ts_tmux=$(/usr/bin/date +%s)
 reloadTmuxUID
