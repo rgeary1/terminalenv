@@ -11,7 +11,9 @@ alias sortu='clean sort -u'
 alias sortn='clean sort -n'
 alias tailf='tail -F'
 alias wcl='wc -l'
+alias fdf='findf'
 function jq() { if [ -t 1 ]; then /usr/bin/jq -C "$@"; else /usr/bin/jq "$@"; fi; }
+function tq() { /usr/bin/toml2json | jq "$@"; }
 
 if [[ ${OSTYPE:0:6} == "darwin" ]]; then
   alias xargs='gxargs'
