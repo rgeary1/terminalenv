@@ -40,5 +40,13 @@ fi
 
 chmod +x "$SRCDIR/update.sh" "$SRCDIR/install.sh" "$SRCDIR/diff.sh" "$SRCDIR/.lessfilter"
 
+if [[ -e /usr/bin/gsettings ]]; then
+  # Disable Ctrl+Alt+{Up,Down}; suppress errors when no dbus session is available
+  for n in down up left right last; do
+    gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-${n} "[]" 2>/dev/null || true
+    gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-${n} "[]" 2>/dev/null || true
+  done
+fi
+
 # Install the files
 "$SRCDIR/install.sh"
