@@ -3,6 +3,7 @@ alias ga='git add'
 alias gc="$HOME/bin/gc"
 alias gca="$HOME/bin/gc --amend"
 alias gl="$HOME/bin/gl"
+alias gl1="git log --oneline --color --decorate | head"
 alias gp='$HOME/bin/gp'
 alias gb='git branch'
 alias gr='git rebase'
