@@ -4,13 +4,17 @@ case "$1" in
     *.md)
         BIN="$(command -v mdv)"
         ;;
+    *.toml)
+        BIN="$(command -v bat)"
+        FLAGS="--color=always"
+        ;;
     *)
         # We don't handle this format.
         exit 1
 esac
 
 if [[ -e "$BIN" ]]; then
-  $BIN "$@"
+  $BIN ${FLAGS-} "$@"
 else
   exit 1
 fi

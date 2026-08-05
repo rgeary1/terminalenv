@@ -12,9 +12,10 @@ fi
 file="$1"
 shift 1
 
-p=$PWD
-while [[ $p != "/" ]]; do
-    if [[ -e "$p/$file" ]]; then
+p=${FIND_ROOT-$PWD}
+p="$(readlink -f $p)"
+while [[ "$p" != "/" && "$p" != "" ]]; do
+    if [[ -e "$p/$file" || "$p" == "." ]]; then
         break
     fi
     p=$(dirname $p)

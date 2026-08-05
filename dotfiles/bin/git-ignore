@@ -9,12 +9,21 @@ if [[ $# == 0 ]]; then
   help
   exit 1
 fi
+
 file=$1
 if [[ -d $file ]]; then
-  echo "$(basename $file)/" >> .gitignore
+  pattern="$(basename $file)/"
 elif [[ ! -e $file ]]; then
   >&2 echo "$file does not exist"
   exit 1
 else
-  echo "$(basename $file)" >> .gitignore
+  pattern="$(basename $file)"
+fi
+
+if ! grep -F "$pattern" .gitignore; then
+  echo "$pattern" >> .gitignore
+  echo "Updated .gitignore"
+else 
+  echo "Already ignored in .gitignore"
+  exit 1
 fi
