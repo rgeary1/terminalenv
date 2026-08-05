@@ -5,7 +5,7 @@ cd -- $(dirname $(readlink -f -- "$0"))
 dryrun=0
 mkdir -p $HOME/tmp
 
-export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master}
+export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/main}
 export INSTALL_MOSH=${INSTALL_MOSH-0}
 
 if [[ "$0" == "-n" ]]; then

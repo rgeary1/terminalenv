@@ -63,7 +63,7 @@ git push  # using the SSH command above
 
 ## Important Conventions
 
-- `$SRC_URL` controls the download source (defaults to GitHub raw master)
+- `$SRC_URL` controls the download source (defaults to GitHub raw main)
 - `$DESTDIR` controls install target (defaults to `$HOME`)
 - All bin/ scripts must be listed in `dotfiles/filelist` to be deployed
 - After modifying dotfiles, run `./upload.sh` (or `./package.sh` + commit) to update the tarball

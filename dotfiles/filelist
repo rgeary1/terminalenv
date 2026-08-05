@@ -21,6 +21,7 @@ bin/git-ignore
 bin/git-params.sh
 bin/git-uncommit
 bin/gl
+bin/gp
 bin/synctime
 bin/tmux-a
 bin/tmux-restore-pane

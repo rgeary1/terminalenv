@@ -1,0 +1,36 @@
+#!/bin/bash
+
+sha="$(git rev-parse HEAD)"
+git_status="$(git status --porcelain | grep -v '^[?][?]')"
+n_git_staged="$(git status --porcelain | grep '^[^ ?]' | wc -l)"
+stash=0
+if [[ "$n_git_staged" != "0" ]]; then
+  >&2 echo "git staged files ($n_git_staged files), commit before gp"
+  exit 1
+fi
+if [[ "$git_status" != "" ]]; then
+  stash=1
+  >&2 echo "stashing changes before git pull"
+  git stash -k -m "gp sha: $sha"
+fi
+git --no-pager pull --no-stat
+rv=$?
+if [[ $rv != 0 ]]; then
+  >&2 echo "WARN: git pull failed, your changes are stashed. git stash pop to unstash"
+  exit $rv
+elif [[ $stash == 1 ]]; then
+  >&2 echo "unstashing changes"
+  git stash pop --quiet || echo "ERROR: Unstash failed"
+fi
+if [[ -f .beads/issues.jsonl ]]; then
+  if ! br sync --import-only -q; then
+    >&2 echo "WARN: br sync --import-only failed"
+  fi
+fi
+git log -3 --decorate --oneline --color=always | cat
+ahead="$(git rev-list --count origin/main..HEAD 2>/dev/null || echo 0)"
+if [[ "$ahead" -gt 0 ]]; then
+  echo "Done. $ahead commits ahead of origin/main."
+else
+  echo "Done. HEAD == origin/main"
+fi

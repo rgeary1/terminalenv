@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master}
+export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/main}
 
 set -eu
 

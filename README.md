@@ -5,7 +5,7 @@ Personal terminal environment — dotfiles, shell utilities, and tmux config —
 ## Install
 
 ```bash
-curl -sL https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/master/install.sh | bash
+curl -sL https://raw.githubusercontent.com/rgeary1/terminalenv/refs/heads/main/install.sh | bash
 ```
 
 This downloads everything to `~/.dotfiles/`, then copies files into place under `$HOME`.
