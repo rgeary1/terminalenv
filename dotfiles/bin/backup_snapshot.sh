@@ -16,7 +16,7 @@ fi
 # Choose a backup root OFF the home btrfs pool when available, else fall back to ~/.backup.
 # (hardlink incrementals via --link-dest must stay on one filesystem, so the whole tree lives here)
 BACKUP_ROOT=""
-for cand in /opt/data/backup /opt/data1/backup /backup; do
+for cand in /opt/data1/backup /backup; do
   if mkdir -p "$cand" 2>/dev/null && [[ -w "$cand" ]]; then
     BACKUP_ROOT="$cand"
     break
@@ -29,9 +29,6 @@ for HOST in ${HOSTS}; do
   BACKUP_DIR=$BACKUP_ROOT/$HOST
 
   mkdir -p $BACKUP_DIR
-  if [[ ! -e $BACKUP_DIR/current ]]; then
-    mkdir -p $BACKUP_DIR/blank && ln -nfs blank $BACKUP_DIR/current
-  fi
 
   snapshot_name=snapshot.$now
   if [[ $HOST == localhost ]]; then
@@ -53,8 +50,16 @@ for HOST in ${HOSTS}; do
     exit 1
   fi
 
-  # Remove old dirs (>5 days)
-  tmpwatch -c 5d $BACKUP_DIR
+  # Remove old dirs (>2 days)
+  oldu=$(($nowu - 2*3600*24))
+  for d in $(cd $BACKUP_DIR; ls -d snapshot.*); do
+    timestr=$(echo $d | sed 's,snapshot.,,')
+    timeu=$(date +%s -d"$(echo $timestr | tr '.' ':')")
+    if [[ $timeu -gt 0 && $timeu -lt $oldu ]]; then
+      echo "Removing $BACKUP_DIR/$d"
+      rm -rf $BACKUP_DIR/$d
+    fi
+  done
 done
 
 echo "Done"
