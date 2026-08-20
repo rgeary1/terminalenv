@@ -65,11 +65,11 @@ function ssh_wrap() {
         # Extract hostname (handles user@host and plain host)
         local host=$(echo "$@" | sed -E -e 's, -[^ ;]*,,g' -e 's,-[Oo] ([^ ;]*|"[^"]*") ,,g' | awk '{print $1}' | sed 's/.*@//')
         ( old_name="$(tmux display-message -p '#W')"
+          trap "tmux rename-window \"$old_name\"" 0
           tmux rename-window "$host"
           command /usr/bin/ssh "$@"
           rv=$?
-          tmux set-window-option automatic-rename on >/dev/null
-          trap "tmux rename-window \"$old_name\"" 0
+          #tmux set-window-option automatic-rename on >/dev/null
         )
         return $rv
      else
