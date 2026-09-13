@@ -28,6 +28,4 @@ bin/tmux-restore-pane
 bin/terminal-rename
 bin/xcat
 bin/xgrep
-bin/aws_sleep_on_idle
-bin/awsdev
 bin/backup_snapshot.sh
