@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sha="$(git rev-parse HEAD)"
+git_worktree_dir="$(git rev-parse --git-dir)"
 git_status="$(git status --porcelain | grep -v '^[?][?]')"
 n_git_staged="$(git status --porcelain | grep '^[^ ?]' | wc -l)"
 stash=0
@@ -10,17 +11,33 @@ if [[ "$n_git_staged" != "0" ]]; then
 fi
 if [[ "$git_status" != "" ]]; then
   stash=1
-  >&2 echo "stashing changes before git pull"
-  git stash -k -m "gp sha: $sha"
+  git stash -k -m "gp sha: $sha" > /tmp/git-stash.log
+  rv=$?
+  if grep -q '^No local changes to save$' /tmp/git-stash.log; then
+    stash=0
+  elif [[ $rv != 0 ]]; then
+    cat /tmp/git-stash.log
+    stash=0
+  else
+    >&2 echo "<- stashing changes before git pull"
+    echo "$sha" > $git_worktree_dir/has_stashed_changes
+    stash=1
+  fi
+elif [[ -e $git_worktree_dir/has_stashed_changes ]]; then
+  echo "NOTE: detected prior stashed changes : $(cat $git_worktree_dir/has_stashed_changes), will pop after rebase"
+  stash=1
 fi
+>&2 echo "Fetching git..."
 git --no-pager pull --no-stat
 rv=$?
 if [[ $rv != 0 ]]; then
   >&2 echo "WARN: git pull failed, your changes are stashed. git stash pop to unstash"
   exit $rv
 elif [[ $stash == 1 ]]; then
-  >&2 echo "unstashing changes"
-  git stash pop --quiet || echo "ERROR: Unstash failed"
+  >&2 echo "-> unstashing changes"
+  git stash pop --quiet
+  [[ $? != 0 ]] && echo "ERROR: Unstash failed"
+  rm "$git_worktree_dir/has_stashed_changes"
 fi
 if [[ -f .beads/issues.jsonl ]]; then
   if ! br sync --import-only -q; then
