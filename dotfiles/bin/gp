@@ -2,14 +2,14 @@
 
 sha="$(git rev-parse HEAD)"
 git_worktree_dir="$(git rev-parse --git-dir)"
-git_status="$(git status --porcelain | grep -v '^[?][?]')"
+n_git_status="$(git status --porcelain | grep -v '^[?][?]' | wc -l)"
 n_git_staged="$(git status --porcelain | grep '^[^ ?]' | wc -l)"
 stash=0
 if [[ "$n_git_staged" != "0" ]]; then
   >&2 echo "git staged files ($n_git_staged files), commit before gp"
   exit 1
 fi
-if [[ "$git_status" != "" ]]; then
+if [[ "$n_git_status" != "0" ]]; then
   stash=1
   git stash -k -m "gp sha: $sha" > /tmp/git-stash.log
   rv=$?
@@ -24,10 +24,12 @@ if [[ "$git_status" != "" ]]; then
     stash=1
   fi
 elif [[ -e $git_worktree_dir/has_stashed_changes ]]; then
-  echo "NOTE: detected prior stashed changes : $(cat $git_worktree_dir/has_stashed_changes), will pop after rebase"
+  >&2 echo "NOTE: detected prior stashed changes : $(cat $git_worktree_dir/has_stashed_changes), will pop after rebase"
   stash=1
+else
+ >&2 echo "(no changes to stash)"
 fi
->&2 echo "Fetching git..."
+>&2 echo "Fetching & rebasing..."
 git --no-pager pull --no-stat
 rv=$?
 if [[ $rv != 0 ]]; then

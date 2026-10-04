@@ -2,13 +2,23 @@
 
 set -eu
 
+quiet=0
+if [[ ${1-} == "-q" ]]; then
+  quiet=1
+fi
+
 cd -- $(dirname $(readlink -f -- "$0"))
 
 DESTDIR=${DESTDIR-${HOME?}}
 
 rv=0
 for f in $(cat filelist); do
-  if ! diff -q "$f" "$DESTDIR/$f" 2>/dev/null; then
+  if [[ $quiet == 1 ]]; then
+    if ! diff -q "$f" "$DESTDIR/$f" >/dev/null 2>&1; then
+      echo "$f"
+      rv=1
+    fi
+  elif ! diff -q "$f" "$DESTDIR/$f" 2>/dev/null; then
     echo "> diff --color -U3 $f $DESTDIR/$f"
     diff --color -U3 "$f" "$DESTDIR/$f" || rv=1
     echo

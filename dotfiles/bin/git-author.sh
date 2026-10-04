@@ -44,13 +44,82 @@ setCursorGitAuthor() {
     [ -n "$effort" ] && tag="$tag, $effort"
     export GIT_AUTHOR_NAME="$base | $tag"
 }
+
+# In a Codex tool shell, tag commits with the active model and effort.
+# Codex's tool commands expose a session id; its latest turn_context has the model.
+setCodexGitAuthor() {
+    [ -n "${CODEX_SESSION_ID:-}" ] && [ -z "${GIT_AUTHOR_NAME:-}" ] || return
+
+    local args=("$@") git_context=() subcommand= arg i=0 base model effort tag
+    while (( i < ${#args[@]} )); do
+        arg=${args[i]}
+        case "$arg" in
+            -C|-c|--git-dir|--work-tree|--namespace|--config-env)
+                (( i + 1 < ${#args[@]} )) || break
+                git_context+=("$arg" "${args[i+1]}")
+                (( i += 2 ))
+                ;;
+            -C*|-c*|--git-dir=*|--work-tree=*|--namespace=*|--config-env=*)
+                git_context+=("$arg")
+                (( i += 1 ))
+                ;;
+            -*)
+                (( i += 1 ))
+                ;;
+            *)
+                subcommand=$arg
+                break
+                ;;
+        esac
+    done
+    [ "$subcommand" = commit ] || return
+
+    base=$(/usr/bin/git "${git_context[@]}" config user.name 2>/dev/null)
+    [ -n "$base" ] || return
+    IFS=$'\t' read -r model effort < <(python3 - "$CODEX_SESSION_ID" <<'PY'
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+session_id = sys.argv[1]
+if not re.fullmatch(r"[0-9a-f-]{36}", session_id):
+    sys.exit(0)
+
+codex_home = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex")
+paths = list((codex_home / "sessions").glob(f"*/*/*/*{session_id}.jsonl"))
+if len(paths) != 1:
+    sys.exit(0)
+
+model = effort = ""
+with paths[0].open(encoding="utf-8") as transcript:
+    for line in transcript:
+        if '"type":"turn_context"' not in line:
+            continue
+        payload = json.loads(line).get("payload", {})
+        model = payload.get("model") or model
+        effort = payload.get("effort") or effort
+
+if model:
+    if model.startswith("gpt-"):
+        model = "GPT-" + model[4:].replace("-", " ").title()
+    print(f"{model}\t{effort}")
+PY
+    )
+    [ -n "$model" ] || return
+    tag=$model
+    [ -n "$effort" ] && tag+=", $effort"
+    export GIT_AUTHOR_NAME="$base | $tag"
+}
 setClaudeGitAuthor
 setCursorGitAuthor
 
-# Cursor/Claude tool shells restore a bashrc snapshot before injecting CURSOR_AGENT /
-# CLAUDE_CODE_*; the one-shot calls above can miss those flags. Re-run on every git.
+# Agent tool shells can restore a bashrc snapshot before injecting agent flags.
+# Re-run the author checks on every Git invocation.
 git() {
     setClaudeGitAuthor
     setCursorGitAuthor
+    setCodexGitAuthor "$@"
     command git "$@"
 }

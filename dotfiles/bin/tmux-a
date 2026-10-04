@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Refresh 3s later
-export _ts_tmux=$(($(date +s)+3))
+export _ts_tmux=$(($(date +%s)+3))
 tmux list-sessions >/dev/null 2>&1
 if [[ $? != 0 ]]; then
-  exec tmux
-else
-  exec tmux a
+  # Start the server in user-tmux.service, not in this terminal's scope: oomd
+  # killed the whole swarm with a vte-spawn scope on 2026-07-27 and 2026-10-04.
+  # Not named tmux.service: tmux-continuum disables that name at every start.
+  systemctl --user start user-tmux.service || exec tmux
 fi
+exec tmux a
