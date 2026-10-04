@@ -140,7 +140,8 @@ if [[ $dryrun == 0 && $DESTDIR == "$HOME" ]] && which crontab >/dev/null 2>&1; t
   current_crontab=$(crontab -l 2>/dev/null || true)
   if ! grep -q '\.dotfiles/update\.sh' <<<"$current_crontab"; then
     echo "Adding daily update cron job"
-    cron_line="0 0 * * * $HOME/.dotfiles/update.sh --skip-different > $HOME/.dotfiles/update.log 2>&1"
+    cron_line="# terminalenv: daily dotfiles auto-update (comment out the next line to disable)
+0 0 * * * $HOME/.dotfiles/update.sh --skip-different > $HOME/.dotfiles/update.log 2>&1"
     if [[ -n $current_crontab ]]; then
       printf '%s\n%s\n' "$current_crontab" "$cron_line" | crontab -
     else
