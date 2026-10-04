@@ -4,6 +4,15 @@ export SRC_URL=${SRC_URL-https://raw.githubusercontent.com/rgeary1/terminalenv/r
 
 set -eu
 
+# Options are passed through to install.sh
+for arg in "$@"; do
+  case $arg in
+    -n|-y|--assume-yes|--skip-different) ;;
+    -h|--help) echo "Usage: $0 [-n] [-y|--assume-yes] [--skip-different]"; exit 0 ;;
+    *) echo "Unknown option: $arg"; exit 1 ;;
+  esac
+done
+
 # Validation
 if [[ ! -d $HOME || ! -w $HOME ]]; then
     echo 'No writeable $HOME'
@@ -49,4 +58,4 @@ if [[ -e /usr/bin/gsettings ]]; then
 fi
 
 # Install the files
-"$SRCDIR/install.sh"
+"$SRCDIR/install.sh" "$@"
