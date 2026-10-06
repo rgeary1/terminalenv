@@ -115,9 +115,38 @@ PY
 setClaudeGitAuthor
 setCursorGitAuthor
 
+# A repo can opt out of agent tagging, e.g. a public repo that must show only
+# its own identity:
+#   git config attribution.agentTag false
+#   git config user.email <id>+<login>@users.noreply.github.com
+# Then author and committer come from the repo's user.name and user.email. They
+# override GIT_AUTHOR_* / GIT_COMMITTER_* from the functions above and from
+# Claude Code, which exports the account email. Returns 1 if the repo did not
+# opt out. Call it in a subshell: it exports into the current shell.
+useRepoIdentity() {
+    local args=("$@") ctx=() i=0 name email
+    while (( i < ${#args[@]} )); do
+        case ${args[i]} in
+            -C | -c | --git-dir | --work-tree) ctx+=("${args[i]}" "${args[i+1]}"); (( i += 2 )) ;;
+            -C* | -c* | --git-dir=* | --work-tree=*) ctx+=("${args[i]}"); (( i += 1 )) ;;
+            -*) (( i += 1 )) ;;
+            *) break ;;
+        esac
+    done
+    [ "$(/usr/bin/git "${ctx[@]}" config --bool attribution.agentTag 2>/dev/null)" = false ] || return 1
+    name=$(/usr/bin/git "${ctx[@]}" config user.name) || return 1
+    email=$(/usr/bin/git "${ctx[@]}" config user.email) || return 1
+    export GIT_AUTHOR_NAME="$name" GIT_AUTHOR_EMAIL="$email"
+    export GIT_COMMITTER_NAME="$name" GIT_COMMITTER_EMAIL="$email"
+}
+
 # Agent tool shells can restore a bashrc snapshot before injecting agent flags.
 # Re-run the author checks on every Git invocation.
 git() {
+    if ( useRepoIdentity "$@" ); then
+        ( useRepoIdentity "$@"; command git "$@" )
+        return
+    fi
     setClaudeGitAuthor
     setCursorGitAuthor
     setCodexGitAuthor "$@"

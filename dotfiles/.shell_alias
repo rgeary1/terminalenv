@@ -56,6 +56,10 @@ function addpath {
 }
 addpath $HOME/bin
 
+clip() {
+    printf '\033]52;c;%s\a' "$(base64 -w0)"
+}
+
 function sum1 {
   awk '{ s += $1 } END { print s }'
 }
