@@ -169,11 +169,21 @@ export NINJA_STATUS='[%f/%t+%r] '
 export CCACHE_DIR=$HOME/.cache/ccache
 export CPP_BUILD_ROOT=$HOME/.build/cpp-build
 export CARGO_TARGET_ROOT=$HOME/.build/cargo-target
-ncores=$(cat /proc/cpuinfo | grep '^model name' | wc -l)
-isolcpus=$(cat /proc/cmdline | grep -o 'isolcpus=[^ ]*' | head -1 | cut -d= -f2)
-isolcpus="$((1-1 * (${isolcpus}+0) ))"
-ncores=$(($ncores-$isolcpus))
-export MAKEFLAGS="-j$ncores"
+# One -O3 -ggdb3 C++ job needs up to 3 GB: keep 10 GB of MemTotal for the system, then one job per 3 GB, capped at usable cores.
+if [[ -r /proc/meminfo && -r /proc/cmdline ]]; then
+  ncores=$(nproc --all)
+  isolcpus=0
+  for _cpus in $(grep -o 'isolcpus=[^ ]*' /proc/cmdline | head -1 | cut -d= -f2 | tr ',' ' '); do
+    if [[ $_cpus =~ ^([0-9]+)-([0-9]+) ]]; then isolcpus=$((isolcpus + BASH_REMATCH[2] - BASH_REMATCH[1] + 1))
+    elif [[ $_cpus =~ ^[0-9]+$ ]]; then isolcpus=$((isolcpus + 1)); fi
+  done
+  ncores=$((ncores - isolcpus)); (( ncores < 1 )) && ncores=1
+  _mkjobs=$(awk '/^MemTotal:/{print int(($2 - 10*1024*1024) / (3*1024*1024))}' /proc/meminfo)
+  (( _mkjobs > ncores )) && _mkjobs=$ncores; (( _mkjobs < 1 )) && _mkjobs=1
+  _mkload=$((ncores * 3 / 4)); (( _mkload < 1 )) && _mkload=1
+  export MAKEFLAGS="-j$_mkjobs -l $_mkload"
+  unset _cpus _mkjobs _mkload
+fi
 mkdir -p $CCACHE_DIR $CPP_BUILD_ROOT $CARGO_TARGET_ROOT
 CCACHE_DIR=$(readlink -f $CCACHE_DIR)
 CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
