@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -eu
+
+quiet=0
+for arg in $@; do
+  if [[ "$arg" == "-q" ]]; then
+    quiet=1
+  fi
+done
+
+if [[ $quiet == 0 ]]; then
+  exec /usr/bin/diff "$@"
+else
+  /usr/bin/diff "$@" | sed -E 's/Files (.*) and (.*) differ$/Files differ : diff \1 \2/'
+  exit ${PIPESTATUS[0]}
+fi

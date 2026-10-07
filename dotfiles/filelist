@@ -9,6 +9,7 @@
 .zshrc.local
 bin/colorpath
 bin/clean
+bin/diff
 bin/field
 bin/findf
 bin/find-root
