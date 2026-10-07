@@ -13,9 +13,9 @@ fi
 cd dotfiles
 num_diffs=0
 for f in $(cat filelist); do
-  if [[ ! -f $f ]]; then continue; fi
-  dest=$HOME/$f
-  if [[ ! -f $dest ]]; then continue; fi
+  dest="$HOME/$f"
+  if [[ ! -f $f ]]; then echo "Missing $f; cp $dest $PWD/$f"; continue; fi
+  if [[ ! -f $dest ]]; then echo "Missing $dest"; continue; fi
   if ! diff -q $f $dest >/dev/null; then
     if [[ $update == 0 ]]; then
       echo "diff "$@" $f $dest"

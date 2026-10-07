@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Codex tool shells may bypass the ~/.bashrc Git function.
+if [[ -n ${CODEX_SESSION_ID:-} && -z ${GIT_AUTHOR_NAME:-} ]]; then
+    . "$HOME/bin/git-author.sh"
+    useRepoIdentity "$@" || setCodexGitAuthor "$@"
+fi
+exec /usr/bin/git "$@"

@@ -17,6 +17,7 @@ bin/ga
 bin/gc
 bin/gcm
 bin/gd
+bin/git
 bin/git-author.sh
 bin/git-ignore
 bin/git-params.sh
