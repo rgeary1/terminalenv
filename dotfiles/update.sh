@@ -34,7 +34,7 @@ if curl -sfL "$SRC_URL/dotfiles.tar.gz${CB}" -o "$tarball"; then
 else
   # Fallback: download files individually from raw GitHub
   echo "No tarball found, falling back to individual file downloads"
-  for f in filelist install.sh diff.sh update.sh; do
+  for f in filelist symlinks install.sh diff.sh update.sh; do
     echo "curl -s $SRC_URL/dotfiles/$f -o $SRCDIR/$f"
     curl -s "$SRC_URL/dotfiles/${f}${CB}" -o "$SRCDIR/$f"
   done
@@ -42,6 +42,14 @@ else
   for f in $(cat $SRCDIR/filelist); do
     dir=$(dirname "$f")
     mkdir -p "$SRCDIR/$dir"
+    # symlinks has "<path> <target>" per line
+    target=$(awk -v f="$f" '$1 == f {print $2}' "$SRCDIR/symlinks" 2>/dev/null || true)
+    if [[ -n $target ]]; then
+      echo ln -sfn "$target" "$SRCDIR/$f"
+      rm -f "$SRCDIR/$f"
+      ln -sfn "$target" "$SRCDIR/$f"
+      continue
+    fi
     echo curl -s $SRC_URL/dotfiles/$f -o "$SRCDIR/$f"
     curl -s "$SRC_URL/dotfiles/${f}${CB}" -o "$SRCDIR/$f" || echo "Failed to copy $f"
   done

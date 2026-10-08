@@ -9,6 +9,10 @@
 .zshrc.local
 bin/colorpath
 bin/clean
+bin/codex
+bin/cursor
+bin/cursor-agent
+bin/agent
 bin/diff
 bin/field
 bin/findf

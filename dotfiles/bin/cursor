@@ -1,0 +1,16 @@
+#!/bin/bash
+ulimit -Sv $((128*1024*1024))
+if [[ "$@" == "" ]]; then
+  set -- "--model" "grok-4.7[context=500k,reasoning_effort=high,fast=false]"
+fi
+# Aliases for parameterized ids that ntm's --cursor flag rejects (it forbids [ ] , =).
+# Used by the for-grok skill: ntm spawn <project> --cursor=1:grok-4.7-xhigh-500k
+args=()
+for a in "$@"; do
+  case "$a" in
+    grok-4.7-xhigh-500k)         a="grok-4.7[context=500k,reasoning_effort=xhigh,fast=false]" ;;
+    --model=grok-4.7-xhigh-500k) a="--model=grok-4.7[context=500k,reasoning_effort=xhigh,fast=false]" ;;
+  esac
+  args+=("$a")
+done
+/home/richard/.local/bin/cursor-agent "${args[@]}"

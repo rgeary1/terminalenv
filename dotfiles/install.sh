@@ -94,9 +94,16 @@ for f in $(cat filelist); do
     echo "skip $f (locally modified)"
     continue
   fi
-  echo cp $f ${DESTDIR}/$f
+  if [[ -d ${DESTDIR}/$f && ! -L ${DESTDIR}/$f ]]; then
+    echo "WARNING: skip $f (${DESTDIR}/$f is a directory)"
+    continue
+  fi
+  # Remove first so an existing symlink at the destination is replaced, not
+  # written through; -P copies symlinks as symlinks
+  echo cp -P $f ${DESTDIR}/$f
   if [[ $dryrun == 0 ]]; then
-    cp $f ${DESTDIR}/$f
+    rm -f ${DESTDIR}/$f
+    cp -P $f ${DESTDIR}/$f
   fi
 done
 

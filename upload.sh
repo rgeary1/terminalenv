@@ -10,7 +10,7 @@ GIT_SSH_CMD='ssh -i ~/.ssh/rgeary1'
 ./package.sh
 
 # Amend the latest commit with the tarball
-git add dotfiles.tar.gz dotfiles.tar.gz.SHA
+git add dotfiles.tar.gz dotfiles.tar.gz.SHA dotfiles/symlinks
 git commit --amend --no-edit
 
 # Push
