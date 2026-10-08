@@ -1,12 +1,22 @@
 #!/bin/bash
+# Managed by host_setup/tmux (installed to ~/bin/tmux-a by install.sh).
+# Attach to tmux. With no server running, start user-tmux.service first when it
+# is installed, so the server runs in its own cgroup and not in this terminal's
+# scope: systemd-oomd killed the whole swarm with a vte-spawn scope on
+# 2026-07-27 and 2026-10-04. Without the unit (or a user systemd manager, e.g.
+# after su), start tmux here as before.
 
-# Refresh 3s later
-export _ts_tmux=$(($(date +%s)+3))
-tmux list-sessions >/dev/null 2>&1
-if [[ $? != 0 ]]; then
-  # Start the server in user-tmux.service, not in this terminal's scope: oomd
-  # killed the whole swarm with a vte-spawn scope on 2026-07-27 and 2026-10-04.
-  # Not named tmux.service: tmux-continuum disables that name at every start.
-  systemctl --user start user-tmux.service || exec tmux
+# Refresh 3s later (the shell rc re-reads tmux state once _ts_tmux has passed).
+export _ts_tmux=$(($(date +%s) + 3))
+
+unit=user-tmux.service
+if ! tmux list-sessions >/dev/null 2>&1; then
+  if systemctl --user cat "$unit" >/dev/null 2>&1 &&
+    ! systemctl --user is-active --quiet "$unit"; then
+    systemctl --user start "$unit" ||
+      echo "tmux-a: $unit did not start (systemctl --user status $unit); starting tmux here" >&2
+  fi
+  # Still no server: the unit is missing, failed, or active without a server.
+  tmux list-sessions >/dev/null 2>&1 || exec tmux
 fi
-exec tmux a
+exec tmux attach

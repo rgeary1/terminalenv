@@ -1,25 +1,10 @@
 #!/bin/bash
+# cursor-agent intermittently rejects a valid model id at startup ("Cannot use this
+# model", exit 1 within seconds). Any run that exits non-zero inside 10 s is retried up
+# to 4 times; stderr is held in a file and replayed after the last attempt.
+# Aliases: ntm's --cursor flag forbids [ ] , = so grok-4.7-xhigh-500k expands here.
 ulimit -Sv $((128*1024*1024))
 AGENT=/home/richard/.local/bin/cursor-agent
-if [[ "$@" == "" ]]; then
-  # cursor-agent intermittently rejects a valid parameterized id at startup with
-  # "Cannot use this model: ..." on stderr and exit 1. Retry up to 4 times; keep stderr
-  # in a file and show it only after the last attempt (or when the session ends).
-  errf=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/cursor-stderr.XXXXXX")
-  trap 'rm -f "$errf"' EXIT
-  for attempt in 1 2 3 4; do
-    "$AGENT" --model "grok-4.7[context=500k,reasoning_effort=high,fast=false]" 2>"$errf"
-    rc=$?
-    if [[ $rc -ne 0 && $attempt -lt 4 ]] && head -c 64 "$errf" | grep -q "^Cannot use this model"; then
-      sleep 2
-      continue
-    fi
-    cat "$errf" >&2
-    exit $rc
-  done
-fi
-# Aliases for parameterized ids that ntm's --cursor flag rejects (it forbids [ ] , =).
-# Used by the for-grok skill: ntm spawn <project> --cursor=1:grok-4.7-xhigh-500k
 args=()
 for a in "$@"; do
   case "$a" in
@@ -28,4 +13,11 @@ for a in "$@"; do
   esac
   args+=("$a")
 done
-"$AGENT" "${args[@]}"
+[[ $# -eq 0 ]] && args=(--model "grok-4.7[context=500k,reasoning_effort=high,fast=false]")
+errf=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/cursor-stderr.XXXXXX"); trap 'rm -f "$errf"' EXIT
+for attempt in 1 2 3 4; do
+  t0=$SECONDS
+  "$AGENT" "${args[@]}" 2>"$errf"; rc=$?
+  (( rc != 0 && SECONDS - t0 < 10 && attempt < 4 )) && { sleep 2; continue; }
+  cat "$errf" >&2; exit $rc
+done

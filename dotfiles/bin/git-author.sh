@@ -22,7 +22,7 @@ setClaudeGitAuthor() {
         "")                return ;;
         *)                 model_name="$model_id" ;;  # unknown id: raw id, no guess
     esac
-    base=$(command git config user.name 2>/dev/null)
+    base=$(/usr/bin/git config user.name 2>/dev/null)
     [ -n "$base" ] || return
     tag="$model_name"
     [ -n "$CLAUDE_EFFORT" ] && tag="$tag, $CLAUDE_EFFORT"
@@ -38,7 +38,7 @@ setCursorGitAuthor() {
     model_name=$(/usr/bin/jq -r '.model.displayNameShort // .model.displayName // .model.modelId // empty' "$cfg")
     [ -n "$model_name" ] || return
     effort=$(/usr/bin/jq -r '(.selectedModel.parameters // [])[] | select(.id=="effort") | .value // empty' "$cfg")
-    base=$(command git config user.name 2>/dev/null)
+    base=$(/usr/bin/git config user.name 2>/dev/null)
     [ -n "$base" ] || return
     tag="$model_name"
     [ -n "$effort" ] && tag="$tag, $effort"
