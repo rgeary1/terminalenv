@@ -2,6 +2,9 @@
 # cursor-agent intermittently rejects a valid model id at startup ("Cannot use this
 # model", exit 1 within seconds). Any run that exits non-zero inside 10 s is retried up
 # to 4 times; stderr is held in a file and replayed after the last attempt.
+# When stdout is not a terminal (-p runs, reviews), a run that writes nothing to stdout
+# is a failure too: retried like the above if it took under 10 s, and the wrapper exits 1
+# with a message on stderr instead of 0, so callers do not log an empty result as success.
 # Aliases: ntm's --cursor flag forbids [ ] , = so grok-4.7-xhigh-500k expands here.
 ulimit -Sv $((128*1024*1024))
 AGENT=/home/richard/.local/bin/cursor-agent
@@ -15,9 +18,25 @@ for a in "$@"; do
 done
 [[ $# -eq 0 ]] && args=(--model "grok-4.7[context=500k,reasoning_effort=high,fast=false]")
 errf=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/cursor-stderr.XXXXXX"); trap 'rm -f "$errf"' EXIT
+# Pass stdout through unchanged; exit 9 if the stream ended before its first byte.
+first_byte() {
+  IFS= read -r -n1 -d '' c || exit 9
+  if [[ -n $c ]]; then printf '%s' "$c"; else printf '\0'; fi
+  cat; exit 0
+}
 for attempt in 1 2 3 4; do
-  t0=$SECONDS
-  "$AGENT" "${args[@]}" 2>"$errf"; rc=$?
-  (( rc != 0 && SECONDS - t0 < 10 && attempt < 4 )) && { sleep 2; continue; }
-  cat "$errf" >&2; exit $rc
+  t0=$SECONDS; empty=0
+  if [[ -t 1 ]]; then
+    "$AGENT" "${args[@]}" 2>"$errf"; rc=$?
+  else
+    "$AGENT" "${args[@]}" 2>"$errf" | first_byte
+    st=("${PIPESTATUS[@]}"); rc=${st[0]}; (( st[1] == 9 )) && empty=1
+  fi
+  (( (rc != 0 || empty) && SECONDS - t0 < 10 && attempt < 4 )) && { sleep 2; continue; }
+  cat "$errf" >&2
+  if (( empty && rc == 0 )); then
+    echo "cursor: cursor-agent exited 0 but wrote nothing to stdout (attempt $attempt, $((SECONDS - t0)) s); exiting 1" >&2
+    exit 1
+  fi
+  exit $rc
 done
