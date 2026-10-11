@@ -31,13 +31,26 @@ for f in $(cat filelist); do
     else
       echo "cp -P $dest $f"
       rm -f "$f"
+      mkdir -p "$(dirname "$f")"
       cp -P "$dest" "$f"
     fi
     num_diffs=$(($num_diffs+1))
     continue
   fi
-  if [[ ! -f $f ]]; then echo "Missing $f; cp $dest $PWD/$f"; continue; fi
   if [[ ! -f $dest ]]; then echo "Missing $dest"; continue; fi
+  # In filelist and on the host, but not yet in the repo
+  if [[ ! -f $f ]]; then
+    if [[ $update == 0 ]]; then
+      echo "new on host: $dest (not in dotfiles/$f)"
+      diff $diff_flags --color "$@" /dev/null $dest
+    else
+      echo "cp $dest $f"
+      mkdir -p "$(dirname "$f")"
+      cp "$dest" "$f"
+    fi
+    num_diffs=$(($num_diffs+1))
+    continue
+  fi
   if ! diff -q $f $dest >/dev/null; then
     if [[ $update == 0 ]]; then
       echo "diff "$@" $f $dest"

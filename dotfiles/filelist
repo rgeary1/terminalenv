@@ -7,6 +7,8 @@
 .tmux.conf
 .vimrc
 .zshrc.local
+bin/build-limited
+bin/claude-statusline
 bin/colorpath
 bin/clean
 bin/codex
@@ -28,6 +30,7 @@ bin/git-params.sh
 bin/git-uncommit
 bin/gl
 bin/gp
+bin/ninja
 bin/synctime
 bin/tmux-a
 bin/tmux-restore-pane

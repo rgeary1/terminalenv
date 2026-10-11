@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
+ulimit -Sv unlimited
 official="$HOME/.npm/global/bin/codex"
 exec "$official" --no-alt-screen "$@"

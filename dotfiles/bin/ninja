@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Route every ninja run into build.slice so memory pressure kills the BUILD,
+# never the tmux pane / agent that happens to be heaviest (systemd-oomd trips the
+# slice's 50% limit before user-1000.slice's 60%). Slice also carries CPUWeight/
+# IOWeight so interactive work wins scheduling contention.
+# See ~/.config/systemd/user/build.slice{,.d/}.
+real=/usr/bin/ninja
+# Nested call already inside the guard (e.g. from build.sh containers) or inside ~/bin/build-limited's
+# buildlimit.slice? Run directly: a scope cannot be started from inside another one, and build-limited
+# already caps CPUs, memory and tasks (ninja's default -j follows the slice's CPU cap there).
+grep -q -E 'build\.slice|buildlimit\.slice' /proc/self/cgroup 2>/dev/null && exec "$real" "$@"
+extra=()
+[[ " $* " == *" -j"* ]] || extra+=(-j 56)    # never default to nproc+2 = 130 jobs
+[[ " $* " == *" -l"* ]] || extra+=(-l 100)   # ninja-native: stop spawning above loadavg X
+exec systemd-run --user --scope --quiet --collect --slice=build.slice \
+  "$real" "${extra[@]}" "$@"

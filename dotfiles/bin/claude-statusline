@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# Write Claude Code statusLine into ~/.claude/settings.json.
+# Claude Code sometimes drops the key; re-run this to restore it.
+set -euo pipefail
+
+SETTINGS="${HOME}/.claude/settings.json"
+STATUSLINE_COMMAND='~/.claude/statusline-command.sh'
+STATUSLINE_PATH="${HOME}/.claude/statusline-command.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: claude-statusline [--help] [status]
+
+Write the Claude Code statusLine entry into ~/.claude/settings.json.
+
+  claude-statusline          install / restore statusLine (idempotent)
+  claude-statusline status   exit 0 if configured, 1 if missing
+  claude-statusline --help   show this help
+
+Claude Code sometimes removes statusLine. This writes it back:
+
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh"
+  }
+
+Other keys in settings.json are left in place. A timestamped backup is
+written next to the file before any change.
+EOF
+}
+
+die() {
+  printf 'claude-statusline: %s\n' "$*" >&2
+  exit 1
+}
+
+is_configured() {
+  [[ -f "$SETTINGS" ]] || return 1
+  command -v jq >/dev/null 2>&1 || return 1
+  jq -e '.statusLine.command | strings | test("statusline-command\\.sh$")' \
+    "$SETTINGS" >/dev/null 2>&1
+}
+
+require_tools() {
+  command -v jq >/dev/null 2>&1 || die "jq is required"
+  [[ -x "$STATUSLINE_PATH" ]] || die "missing executable $STATUSLINE_PATH"
+}
+
+install_statusline() {
+  require_tools
+
+  if is_configured; then
+    printf 'claude-statusline: already configured in %s\n' "$SETTINGS"
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$SETTINGS")"
+
+  local tmp
+  tmp=$(mktemp "${SETTINGS}.XXXXXX")
+  # shellcheck disable=SC2064
+  trap "rm -f '$tmp'" EXIT
+
+  if [[ ! -f "$SETTINGS" ]]; then
+    jq -n --arg cmd "$STATUSLINE_COMMAND" \
+      '{statusLine: {type: "command", command: $cmd}}' >"$tmp"
+  else
+    jq empty "$SETTINGS" >/dev/null 2>&1 || die "$SETTINGS is not valid JSON"
+    local backup
+    backup="${SETTINGS}.bak.$(date +%Y%m%d%H%M%S)"
+    cp -p "$SETTINGS" "$backup"
+    jq --arg cmd "$STATUSLINE_COMMAND" \
+      '.statusLine = {type: "command", command: $cmd}' \
+      "$SETTINGS" >"$tmp"
+    printf 'claude-statusline: backed up %s -> %s\n' "$SETTINGS" "$backup"
+  fi
+
+  mv -f "$tmp" "$SETTINGS"
+  trap - EXIT
+
+  is_configured || die "wrote $SETTINGS but statusLine check still fails"
+  printf 'claude-statusline: wrote statusLine into %s\n' "$SETTINGS"
+}
+
+case "${1:-}" in
+  "" | install)
+    install_statusline
+    ;;
+  status)
+    if is_configured; then
+      printf 'claude-statusline: configured\n'
+      exit 0
+    fi
+    printf 'claude-statusline: missing from %s\n' "$SETTINGS"
+    exit 1
+    ;;
+  -h | --help | help)
+    usage
+    ;;
+  *)
+    usage >&2
+    die "unknown argument: $1"
+    ;;
+esac

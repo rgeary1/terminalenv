@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+# Run a build or test command inside the shared buildlimit.slice cgroup, so that agent builds together cannot take
+# the host down. Inside, nproc reports the slice's CPU count, so build.sh, cargo, ninja and make size themselves to it.
+#   build-limited ./build.sh
+#   build-limited make test
+#   build-limited --print-limits     # show the limits this host gets and exit
+#
+# The limits are totals for every limited build of this user at once, applied to the slice that all of them run in.
+# By default they follow the host: one CPU thread on each physical core (the SMT siblings stay free for interactive
+# work) and 70% of RAM. ~/.config/build-limited.conf may set cpus=, mem= (e.g. 88G) and tasks= to override them; the
+# environment cannot, because one caller would change them for every build.
+# Past the memory total the kernel OOM-kills inside the slice, not elsewhere on the host.
+# A build first waits until the slice has BUILD_LIMIT_START_MEM (default 16G) of headroom and the host has as much
+# MemAvailable, and until BUILD_LIMIT_START_GAP seconds (default 30) have passed since the previous limited build
+# started, which gives that one time to grow before the next reads the memory figures.
+# The canonical copy lives in devtools scripts/buildlimit/; host-setup-buildcache.sh installs it into ~/bin.
+set -euo pipefail
+start_mem=${BUILD_LIMIT_START_MEM:-16G}
+start_gap_secs=${BUILD_LIMIT_START_GAP:-30}
+slice=buildlimit.slice
+config_file=${XDG_CONFIG_HOME:-$HOME/.config}/build-limited.conf
+
+# The first CPU thread of each physical core, in core order.
+firstThreadPerCore() {
+  lscpu -p=CPU,CORE | awk -F, '!/^#/ && !seen[$2]++ { print $1 }'
+}
+
+readConfigValue() {
+  local key=$1
+  [[ -r $config_file ]] || return 0
+  awk -F= -v key="$key" '{ gsub(/[[:space:]]/, "") } $1 == key { value = $2 } END { print value }' "$config_file"
+}
+
+cpus=$(readConfigValue cpus)
+mem=$(readConfigValue mem)
+tasks=$(readConfigValue tasks)
+mapfile -t core_threads < <(firstThreadPerCore)
+cpus=${cpus:-${#core_threads[@]}}
+if (( cpus > ${#core_threads[@]} )); then
+  cpus=${#core_threads[@]}
+fi
+mem=${mem:-$(awk '/^MemTotal:/ { printf "%dG", $2 * 0.7 / 1048576 }' /proc/meminfo)}
+tasks=${tasks:-8192}
+allowed_cpus=$(printf '%s\n' "${core_threads[@]:0:cpus}" | paste -sd,)
+mem_bytes=$(numfmt --from=iec "$mem")
+start_mem_bytes=$(numfmt --from=iec "$start_mem")
+
+user_manager_cgroup=/sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service
+has_cpuset=0
+if grep -qw cpuset "$user_manager_cgroup/cgroup.controllers" 2>/dev/null; then
+  has_cpuset=1
+fi
+
+if [[ ${1:-} == --print-limits ]]; then
+  printf 'cpus=%s\nallowed_cpus=%s\nmem=%s\nmemory_high_bytes=%s\ntasks=%s\ncpuset_delegated=%s\nconfig=%s\n' \
+    "$cpus" "$allowed_cpus" "$mem" "$((mem_bytes * 3 / 4))" "$tasks" "$has_cpuset" "$config_file"
+  exit 0
+fi
+if [[ $# -eq 0 ]]; then
+  echo "usage: build-limited <command> [args...] | --print-limits" >&2
+  exit 2
+fi
+# Already inside a limited scope: do not nest.
+if [[ -n ${BUILD_LIMITED:-} ]]; then
+  exec "$@"
+fi
+
+cpu_properties=(CPUQuota="$((cpus * 100))%")
+if ((has_cpuset)); then
+  cpu_properties+=(AllowedCPUs="$allowed_cpus")
+else
+  echo "build-limited: the cpuset controller is not delegated to the user manager, so nproc inside builds reports" \
+    "every CPU; MAKEFLAGS and the CPU quota still hold. host-setup-buildcache.sh prints the root step that fixes it." >&2
+fi
+# MemoryHigh (three quarters of the total) makes the slice reclaim and throttle itself before the hard cap, and the
+# lower CPU and IO weights let interactive work win contention while builds still use idle cores. systemd-oomd kills
+# inside this slice at 50% memory pressure, below the 60% that governs the login session, so under pressure it takes
+# a build rather than a tmux pane; a per-unit setting is needed because a vendor slice.d default forces 80%.
+# Applied on every run so that a changed limit takes effect for the next build; --runtime keeps it out of ~/.config.
+systemctl --user set-property --runtime "$slice" "${cpu_properties[@]}" \
+  MemoryHigh="$((mem_bytes * 3 / 4))" MemoryMax="$mem" MemorySwapMax=0 TasksMax="$tasks" \
+  CPUWeight=30 IOWeight=40 ManagedOOMMemoryPressure=kill ManagedOOMMemoryPressureLimit=50%
+
+host_available_bytes() {
+  awk '/^MemAvailable:/ { print $2 * 1024 }' /proc/meminfo
+}
+# Anonymous plus shmem pages only: memory.current also counts the page cache charged to the slice, which the
+# kernel reclaims before it OOM-kills, so an idle slice full of cached build inputs would otherwise look full.
+slice_used_bytes() {
+  local cgroup
+  cgroup=$(systemctl --user show -p ControlGroup --value "$slice")
+  if [[ -n $cgroup && -r /sys/fs/cgroup$cgroup/memory.stat ]]; then
+    awk '$1 == "anon" || $1 == "shmem" { used += $2 } END { print used + 0 }' "/sys/fs/cgroup$cgroup/memory.stat"
+  else
+    echo 0
+  fi
+}
+
+state_dir=${XDG_RUNTIME_DIR:-/tmp}/build-limited
+mkdir -p "$state_dir"
+last_start_file=$state_dir/last-start
+# One waiter checks at a time, so two cannot both see the same free memory and start together.
+exec 9>>"$state_dir/lock"
+flock 9
+waited_secs=0
+while :; do
+  now=$(date +%s)
+  last_start=$(cat "$last_start_file" 2>/dev/null || echo 0)
+  host_available=$(host_available_bytes)
+  slice_headroom=$(( mem_bytes - $(slice_used_bytes) ))
+  if (( host_available >= start_mem_bytes && slice_headroom >= start_mem_bytes &&
+        now - last_start >= start_gap_secs )); then
+    break
+  fi
+  if (( waited_secs % 60 == 0 )); then
+    echo "build-limited: waiting to start (need $start_mem free): slice headroom" \
+      "$(numfmt --to=iec -- "$slice_headroom") of $mem, host MemAvailable $(numfmt --to=iec "$host_available")," \
+      "last limited build started $(( now - last_start ))s ago (need ${start_gap_secs}s)" >&2
+  fi
+  sleep 5
+  waited_secs=$(( waited_secs + 5 ))
+done
+date +%s > "$last_start_file"
+exec 9>&-
+
+export BUILD_LIMITED=1
+# MAKEFLAGS from the login shell is sized for the whole host; resize it to the slice.
+export MAKEFLAGS="-j${cpus} -l${cpus}"
+# Container builds parent their podman cgroup on this slice too (sunbird container.run.sh reads HS_BUILD_SLICE, dc
+# build.sh, run.sh and build-gui.sh read DC_BUILD_SLICE), so the same CPU set, memory total and oomd policy govern
+# them. container.run.sh caps each container's CPU quota at HS_BUILD_CPUS, default 32; match it to the slice.
+export HS_BUILD_SLICE="$slice" DC_BUILD_SLICE="$slice" HS_BUILD_CPUS="${HS_BUILD_CPUS:-$cpus}"
+scope_properties=()
+if ((has_cpuset)); then
+  scope_properties=(-p AllowedCPUs="$allowed_cpus")
+fi
+exec systemd-run --user --scope --quiet --collect --slice="$slice" "${scope_properties[@]}" -- "$@"
