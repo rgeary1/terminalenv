@@ -49,8 +49,10 @@ fi
 git log -3 --decorate --oneline --color=always | cat
 ahead="$(git rev-list --count origin/main..HEAD 2>/dev/null || echo 0)"
 last_commit="$(git log -1 --format='%ci')"
+pulled="$(git rev-list --count "$sha"..origin/main 2>/dev/null || echo 0)"
 if [[ "$ahead" -gt 0 ]]; then
-  echo "Done. $ahead commits ahead of origin/main. Last commit time : $last_commit"
+  echo "Done. $ahead commits ahead of origin/main."
 else
-  echo "Done. HEAD == origin/main. Last commit time : $last_commit"
+  echo "Done. HEAD == origin/main."
 fi
+echo "Fast-forwarded $pulled commits. Last commit time : $last_commit"

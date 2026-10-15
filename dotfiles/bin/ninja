@@ -5,6 +5,10 @@
 # IOWeight so interactive work wins scheduling contention.
 # See ~/.config/systemd/user/build.slice{,.d/}.
 real=/usr/bin/ninja
+# Root installs cannot use the invoking user's systemd user bus.
+if (( EUID == 0 )); then
+  exec "$real" "$@"
+fi
 # Nested call already inside the guard (e.g. from build.sh containers) or inside ~/bin/build-limited's
 # buildlimit.slice? Run directly: a scope cannot be started from inside another one, and build-limited
 # already caps CPUs, memory and tasks (ninja's default -j follows the slice's CPU cap there).

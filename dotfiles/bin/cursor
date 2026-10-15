@@ -1,4 +1,7 @@
 #!/bin/bash
+# Installed as ~/bin/cursor (with ~/bin/cursor-agent and ~/bin/agent -> cursor) by the
+# cursor-agent-setup skill (claude-skills repo). Edit cursor-agent-setup/scripts/cursor there, not in ~/bin.
+#
 # cursor-agent intermittently rejects a valid model id at startup ("Cannot use this
 # model", exit 1 within seconds). Any run that exits non-zero inside 10 s is retried up
 # to 4 times; stderr is held in a file and replayed after the last attempt.
@@ -6,8 +9,36 @@
 # is a failure too: retried like the above if it took under 10 s, and the wrapper exits 1
 # with a message on stderr instead of 0, so callers do not log an empty result as success.
 # Aliases: ntm's --cursor flag forbids [ ] , = so grok-4.7-xhigh-500k expands here.
-ulimit -Sv $((128*1024*1024))
-AGENT=/home/richard/.local/bin/cursor-agent
+# node dies with "JavaScript heap out of memory" under a low virtual-memory ulimit; raise
+# the soft limit to 256G, or to the hard limit where that is lower.
+ulimit -Sv $((256*1024*1024)) 2>/dev/null || ulimit -Sv "$(ulimit -Hv)" 2>/dev/null || true
+# The CLI rewrites cli-config.json on updates; re-enforce our key fields (fail-soft).
+if [[ -f $HOME/.cursor/cli-config.json ]]; then
+  python3 - "$HOME/.cursor/cli-config.json" 2>/dev/null <<'EOF' || true
+import json, sys
+p = sys.argv[1]
+try:
+    with open(p) as f: cfg = json.load(f)
+except Exception: sys.exit(0)
+changed = False
+att = cfg.setdefault("attribution", {})
+for k in ("attributeCommitsToAgent", "attributePRsToAgent"):
+    if att.get(k) is not False: att[k] = False; changed = True
+if cfg.get("approvalMode") != "unrestricted":
+    cfg["approvalMode"] = "unrestricted"; changed = True
+want_status = {"type": "command", "command": "~/.cursor/statusline.sh", "padding": 2}
+if cfg.get("statusLine") != want_status:
+    cfg["statusLine"] = want_status; changed = True
+if changed:
+    with open(p, "w") as f: json.dump(cfg, f, indent=2); f.write("\n")
+EOF
+fi
+AGENT=${CURSOR_AGENT_REAL:-$HOME/.local/bin/cursor-agent}
+if [[ ! -x $AGENT || $(readlink -f "$AGENT") == $(readlink -f "$0") ]]; then
+  echo "cursor: no real cursor-agent at $AGENT; install the Cursor CLI" \
+       "(curl https://cursor.com/install -fsS | bash) or set CURSOR_AGENT_REAL" >&2
+  exit 127
+fi
 args=()
 for a in "$@"; do
   case "$a" in
