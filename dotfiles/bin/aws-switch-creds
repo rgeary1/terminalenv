@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -eu
+
+cd $HOME/.aws
+
+if [[ ! -L credentials ]]; then
+  >&2 echo "ERROR: ~/.aws/credentials should be a symlink. Aborting."
+  exit 1
+fi
+options="$(ls *_credentials | sed 's,_credentials$,,')"
+
+current=$(readlink credentials)
+desired="${1-bot}"
+if [[ "$desired" == "-h" ]]; then
+  echo "Options : $options"
+  exit 0
+else
+  found=0
+  for c in $options; do
+    credfile=${c}_credentials
+    [[ ! -e $credfile ]] && continue;
+    if [[ "$desired" == "$c" ]]; then
+      ln -nfs $credfile credentials
+      found=1
+      break
+    fi
+  done
+  if [[ $found == 0 ]]; then
+    echo "Error: target not recognised.  Supported : ${options}"
+  else
+    ls -l credentials
+  fi
+fi
+
