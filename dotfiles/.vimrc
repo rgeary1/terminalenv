@@ -25,3 +25,4 @@ noremap <C-z> <nop>
 set noincsearch
 set shiftwidth=2
 
+autocmd BufRead,BufNewFile /home/richard/.aws/* setlocal filetype=confini

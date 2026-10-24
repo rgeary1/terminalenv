@@ -4,4 +4,25 @@ if [[ -n ${CODEX_SESSION_ID:-} && -z ${GIT_AUTHOR_NAME:-} ]]; then
     . "$HOME/bin/git-author.sh"
     useRepoIdentity "$@" || setCodexGitAuthor "$@"
 fi
+# The subcommands whose hooks build and test (a repo's pre-commit and pre-push gates) run through ~/bin/build-limited,
+# in the shared buildlimit.slice. The rest run directly: they would only wait at the slice's start gate. Inside a
+# limited build (BUILD_LIMITED set), a hook's own git calls run directly; build-limited never nests.
+if [[ -z ${BUILD_LIMITED:-} && -x $HOME/bin/build-limited && -S ${XDG_RUNTIME_DIR:-/nonexistent}/bus ]]; then
+    args=("$@")
+    subcommand=
+    for ((i = 0; i < ${#args[@]}; i++)); do
+        case ${args[i]} in
+            -C | -c | --git-dir | --work-tree | --namespace | --exec-path | --super-prefix | --config-env)
+                ((i += 1)) ;; # global options whose value is the next argument
+            -*) ;;
+            *)
+                subcommand=${args[i]}
+                break
+                ;;
+        esac
+    done
+    case $subcommand in
+        commit | push | merge | am | pull) exec "$HOME/bin/build-limited" /usr/bin/git "$@" ;;
+    esac
+fi
 exec /usr/bin/git "$@"

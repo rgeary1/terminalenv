@@ -11,8 +11,9 @@ fi
 options="$(ls *_credentials | sed 's,_credentials$,,')"
 
 current=$(readlink credentials)
-desired="${1-bot}"
+desired="${1--h}"
 if [[ "$desired" == "-h" ]]; then
+  echo "Current : $current"
   echo "Options : $options"
   exit 0
 else
