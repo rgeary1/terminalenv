@@ -19,4 +19,9 @@ if ! tmux list-sessions >/dev/null 2>&1; then
   # Still no server: the unit is missing, failed, or active without a server.
   tmux list-sessions >/dev/null 2>&1 || exec tmux
 fi
-exec tmux attach
+# Attach to session 0 by default
+if tmux list-sessions | grep '^0:' | head -1 >/dev/null; then
+  exec tmux attach -t 0
+else
+  exec tmux attach
+fi
