@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 ulimit -Sv unlimited
 official="$HOME/.npm/global/bin/codex"
+[ ! -e $official ] && official="$HOME/.local/share/npm/bin/codex"
 exec "$official" --no-alt-screen "$@"
