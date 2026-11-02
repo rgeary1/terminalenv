@@ -38,3 +38,12 @@ redirect
 
 # bv (beads viewer) lock file
 .bv.lock
+
+# frankensqlite sidecars and br recovery artifacts (br >= 0.7)
+*.db-wal*
+*-fsqlite-ns-gate
+*-fsqlite-ns-use
+*.vacuum-wal-cert*
+*.fsqlite-migration-state
+.br-wal-index-*/
+.br_recovery/
