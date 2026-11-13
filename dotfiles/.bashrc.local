@@ -168,8 +168,10 @@ alias c='build-run check'
 
 export NINJA_STATUS='[%f/%t+%r] '
 export CCACHE_DIR=$HOME/.cache/ccache
-export CPP_BUILD_ROOT=$HOME/.build/cpp-build
-export CARGO_TARGET_ROOT=$HOME/.build/cargo-target
+export BUILD_ROOT=$HOME/.build
+[ -e /build/$USER ] && BUILD_ROOT=/build/$USER
+export CPP_BUILD_ROOT=$BUILD_ROOT/cpp-build
+export CARGO_TARGET_ROOT=$BUILD_ROOT/cargo-target
 # One -O3 -ggdb3 C++ job needs up to 3 GB: keep 10 GB of MemTotal for the system, then one job per 3 GB, capped at usable cores.
 if [[ -r /proc/meminfo && -r /proc/cmdline ]]; then
   ncores=$(nproc --all)
@@ -191,6 +193,7 @@ CPP_BUILD_ROOT=$(readlink -f $CPP_BUILD_ROOT)
 CARGO_TARGET_ROOT=$(readlink -f $CARGO_TARGET_ROOT)
 
 if [[ -d $HOME/.local/share/npm/bin ]]; then appendPath $HOME/.local/share/npm/bin; fi
+[ -f ~/bin/git-author.sh ] && . ~/bin/git-author.sh
 
 fi # UID != 0
 
