@@ -17,7 +17,12 @@ for arg in "$@"; do
       opts+=("$arg")
     fi
   else
-    not_opts+=("$arg")
+    if git rev-parse "$arg" >/dev/null 2>&1; then
+      # A git ref or git branch
+      params+=("$arg")
+    else
+      not_opts+=("$arg")
+    fi
   fi
 done
 
